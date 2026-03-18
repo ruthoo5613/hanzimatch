@@ -34,4 +34,5 @@ export interface GameState {
   learnedWords: Word[];
   unlockedThemes: string[];
   completedLevels: { themeId: string; levelId: number }[];
+  currentWords: Word[]; // 当前主题随机选的3个词
 }

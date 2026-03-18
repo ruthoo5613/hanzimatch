@@ -6,7 +6,7 @@ import type { Word } from '../types';
 const CORRECT_MESSAGES = ['Great! 🎉', 'Awesome! ⭐', 'Excellent! 💪', 'Well done! 👏', 'Perfect! ✨'];
 
 export function Phase1() {
-  const { currentTheme, currentLevel, setPhase, addLearnedWord, getRandomWordsForLevel } = useGameStore();
+  const { currentTheme, currentLevel, currentWords, setPhase, addLearnedWord } = useGameStore();
   const { speak } = useSpeech();
   
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -16,9 +16,7 @@ export function Phase1() {
   const [激励消息, set激励消息] = useState<string>('');
   const [show激励, setShow激励] = useState(false);
 
-  // 每次进入关卡时随机选择3个词
-  const levelWords = currentTheme ? getRandomWordsForLevel(currentTheme, currentLevel) : [];
-  const targetWord = levelWords[currentWordIndex];
+  const targetWord = currentWords[currentWordIndex];
 
   useEffect(() => {
     if (!currentTheme || !targetWord) return;
@@ -49,7 +47,7 @@ export function Phase1() {
       
       setTimeout(() => {
         setShow激励(false);
-        if (currentWordIndex < levelWords.length - 1) {
+        if (currentWordIndex < currentWords.length - 1) {
           setCurrentWordIndex(prev => prev + 1);
           setSelectedOption(null);
           setIsCorrect(null);

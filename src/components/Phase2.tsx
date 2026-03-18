@@ -38,7 +38,7 @@ const IMAGE_MAP: Record<string, string> = {
 };
 
 export function Phase2() {
-  const { currentTheme, currentLevel, setPhase, addLearnedWord, getRandomWordsForLevel } = useGameStore();
+  const { currentTheme, currentLevel, currentWords, setPhase, addLearnedWord } = useGameStore();
   const { speak } = useSpeech();
 
   const [matches, setMatches] = useState<MatchPair[]>([]);
@@ -47,8 +47,8 @@ export function Phase2() {
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [allMatched, setAllMatched] = useState(false);
 
-  // 使用随机词
-  const levelWordObjects = currentTheme ? getRandomWordsForLevel(currentTheme, currentLevel) : [];
+  // 使用当前主题的3个词（固定不变）
+  const levelWordObjects = currentWords;
 
   useEffect(() => {
     const initial = levelWordObjects.map(w => ({ wordId: w.id, matched: false }));

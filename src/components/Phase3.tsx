@@ -4,15 +4,15 @@ import { useSpeech } from '../hooks/useSpeech';
 import { useRecorder } from '../hooks/useRecorder';
 
 export function Phase3() {
-  const { currentTheme, currentLevel, completeLevel, unlockTheme, setPhase, getRandomWordsForLevel } = useGameStore();
+  const { currentTheme, currentLevel, currentWords, completeLevel, unlockTheme, setPhase } = useGameStore();
   const { speak } = useSpeech();
   const { isRecording, audioUrl, startRecording, stopRecording, clearRecording } = useRecorder();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // 使用随机词
-  const wordsToPractice = currentTheme ? getRandomWordsForLevel(currentTheme, currentLevel) : [];
+  // 使用当前主题的3个词（固定不变）
+  const wordsToPractice = currentWords;
   const currentWord = wordsToPractice[currentIndex];
 
   const handleComplete = () => {

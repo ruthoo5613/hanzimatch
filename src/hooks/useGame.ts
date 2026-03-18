@@ -5,6 +5,7 @@ import { scenicTheme, restaurantTheme, taxiTheme } from '../data';
 
 interface GameStore extends GameState {
   themes: Theme[];
+  currentWords: Word[];  // 当前主题的3个词
   setTheme: (theme: Theme) => void;
   setLevel: (level: number) => void;
   setPhase: (phase: GamePhase) => void;
@@ -15,7 +16,6 @@ interface GameStore extends GameState {
   isThemeUnlocked: (themeId: string) => boolean;
   isLevelCompleted: (themeId: string, levelId: number) => boolean;
   isThemeCompleted: (themeId: string) => boolean;
-  getRandomWordsForLevel: (theme: Theme, level: number) => Word[];
 }
 
 const initialState: GameState = {
@@ -25,6 +25,7 @@ const initialState: GameState = {
   learnedWords: [],
   unlockedThemes: ['scenic'], // 第一个主题默认解锁
   completedLevels: [],
+  currentWords: [], // 当前主题的3个词
 };
 
 export const useGameStore = create<GameStore>()(
@@ -33,7 +34,12 @@ export const useGameStore = create<GameStore>()(
       ...initialState,
       themes: [scenicTheme, restaurantTheme, taxiTheme],
 
-      setTheme: (theme: Theme) => set({ currentTheme: theme, currentLevel: 1 }),
+      setTheme: (theme: Theme) => {
+        // 每次选择主题时随机3个词
+        const shuffled = [...theme.words].sort(() => Math.random() - 0.5);
+        const randomWords = shuffled.slice(0, 3);
+        set({ currentTheme: theme, currentLevel: 1, currentWords: randomWords });
+      },
       
       setLevel: (level: number) => set({ currentLevel: level }),
       
@@ -86,12 +92,6 @@ export const useGameStore = create<GameStore>()(
       
       isThemeCompleted: (themeId: string) => {
         return get().completedLevels.some(c => c.themeId === themeId && c.levelId === 3);
-      },
-      
-      // 每次随机获取3个词
-      getRandomWordsForLevel: (theme: Theme, _level: number) => {
-        const shuffled = [...theme.words].sort(() => Math.random() - 0.5);
-        return shuffled.slice(0, 3);
       },
     }),
     {
