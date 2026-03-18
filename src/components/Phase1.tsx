@@ -31,7 +31,7 @@ export function Phase1() {
     setOptions(shuffled);
     
     setTimeout(() => speak(targetWord.char), 500);
-  }, [currentTheme, targetWord, currentWordIndex]);
+  }, [currentTheme, targetWord, currentWordIndex, speak]);
 
   const handleSelect = (word: Word) => {
     if (selectedOption !== null) return;
@@ -42,7 +42,6 @@ export function Phase1() {
       setIsCorrect(true);
       addLearnedWord(targetWord);
       
-      // 随机激励消息
       const msg = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
       set激励消息(msg);
       setShow激励(true);
@@ -82,20 +81,48 @@ export function Phase1() {
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 40 }}>
-        <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 20 }}>
-          Listen and choose the correct character
+      {/* Progress dots */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+        {levelWords.map((_, idx) => (
+          <div
+            key={idx}
+            style={{
+              width: idx === currentWordIndex ? 24 : 8,
+              height: 8,
+              borderRadius: 4,
+              background: idx < currentWordIndex ? 'var(--primary)' : idx === currentWordIndex ? 'var(--primary)' : '#E0E0E0',
+              transition: 'all 0.3s ease',
+            }}
+          />
+        ))}
+      </div>
+
+      <div style={{ textAlign: 'center', padding: '0 20px' }}>
+        <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 24 }}>
+          🎧 Listen and choose
         </p>
 
+        {/* Listen Button */}
         <button
-          className="btn btn-primary"
           onClick={() => speak(targetWord.char)}
-          style={{ marginBottom: 40, fontSize: 20, padding: '16px 32px' }}
+          style={{
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 50,
+            width: 80,
+            height: 80,
+            fontSize: 32,
+            cursor: 'pointer',
+            marginBottom: 24,
+            boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)',
+            transition: 'transform 0.2s ease',
+          }}
         >
-          🔊 Listen
+          🔊
         </button>
 
-        {/* 激励消息 */}
+        {/* Feedback message */}
         {show激励 && (
           <div style={{
             fontSize: 24,
@@ -108,6 +135,7 @@ export function Phase1() {
           </div>
         )}
 
+        {/* Options */}
         <div className="options-grid">
           {options.map((word) => {
             let className = 'option-btn';
@@ -121,6 +149,11 @@ export function Phase1() {
                 className={className}
                 onClick={() => handleSelect(word)}
                 disabled={selectedOption !== null}
+                style={{
+                  padding: '24px 16px',
+                  fontSize: 28,
+                  fontWeight: 600,
+                }}
               >
                 {word.char}
               </button>

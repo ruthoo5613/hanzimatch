@@ -9,20 +9,17 @@ export function Phase3() {
   const { isRecording, audioUrl, startRecording, stopRecording, clearRecording } = useRecorder();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [_recorded, setRecorded] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // 获取当前关卡的字
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
   const wordsToPractice = currentTheme?.words.filter(w => levelWords.includes(w.id)) || [];
   const currentWord = wordsToPractice[currentIndex];
 
-  // 完成后解锁下一主题
   const handleComplete = () => {
     if (!currentTheme) return;
     
     completeLevel(currentTheme.id, currentLevel);
     
-    // 解锁下一个主题
     if (currentLevel === 3) {
       if (currentTheme.id === 'scenic') {
         unlockTheme('restaurant');
@@ -34,13 +31,21 @@ export function Phase3() {
 
   const handleNext = () => {
     clearRecording();
-    setRecorded(false);
     
     if (currentIndex < wordsToPractice.length - 1) {
       setCurrentIndex(prev => prev + 1);
+      setShowSuccess(false);
     } else {
-      // 完成了
       handleComplete();
+    }
+  };
+
+  const handleRecord = () => {
+    if (isRecording) {
+      stopRecording();
+      setShowSuccess(true);
+    } else {
+      startRecording();
     }
   };
 
@@ -59,66 +64,152 @@ export function Phase3() {
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 40 }}>
-        <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 40 }}>
-          Practice speaking!
+      <div style={{ textAlign: 'center', padding: '0 20px' }}>
+        <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 24 }}>
+          🎤 Practice speaking
         </p>
 
-        {/* 当前要读的词 */}
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ fontSize: 64, fontWeight: 700, marginBottom: 8 }}>
-            {currentWord.char}
-          </div>
-          <div style={{ fontSize: 18, color: 'var(--text-secondary)', marginBottom: 16 }}>
-            {currentWord.pinyin}
-          </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => speak(currentWord.char)}
-            style={{ fontSize: 18, padding: '12px 24px' }}
-          >
-            🔊 Play
-          </button>
+        {/* Progress dots */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
+          {wordsToPractice.map((word, idx) => (
+            <div
+              key={word.id}
+              style={{
+                width: idx === currentIndex ? 24 : 8,
+                height: 8,
+                borderRadius: 4,
+                background: idx < currentIndex ? 'var(--primary)' : idx === currentIndex ? 'var(--primary)' : '#E0E0E0',
+                transition: 'all 0.3s ease',
+              }}
+            />
+          ))}
         </div>
 
-        {/* 录音按钮 */}
-        <div style={{ marginBottom: 40 }}>
+        {/* Word Card */}
+        <div style={{
+          background: 'white',
+          borderRadius: 20,
+          padding: '32px 24px',
+          marginBottom: 24,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        }}>
+          <div style={{ 
+            fontSize: 72, 
+            fontWeight: 700, 
+            marginBottom: 8,
+            color: 'var(--text-primary)',
+            letterSpacing: '8px',
+          }}>
+            {currentWord.char}
+          </div>
+          <div style={{ fontSize: 20, color: 'var(--primary)', marginBottom: 8 }}>
+            {currentWord.pinyin}
+          </div>
+          <div style={{ fontSize: 16, color: 'var(--text-secondary)' }}>
+            {currentWord.english}
+          </div>
+        </div>
+
+        {/* Play Button */}
+        <button
+          onClick={() => speak(currentWord.char)}
+          style={{
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 50,
+            width: 64,
+            height: 64,
+            fontSize: 28,
+            cursor: 'pointer',
+            marginBottom: 24,
+            boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+            transition: 'transform 0.2s ease',
+          }}
+        >
+          🔊
+        </button>
+
+        {/* Mic Button */}
+        <div style={{ marginBottom: 20 }}>
           <button
-            className={`mic-btn ${isRecording ? 'recording' : ''}`}
-            onClick={isRecording ? stopRecording : startRecording}
+            onClick={handleRecord}
             style={{
-              background: isRecording ? 'var(--error)' : 'var(--secondary)',
-              color: 'white'
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              border: 'none',
+              background: isRecording ? 'var(--error)' : 'linear-gradient(135deg, #FF9800, #F57C00)',
+              color: 'white',
+              fontSize: 36,
+              cursor: 'pointer',
+              boxShadow: isRecording 
+                ? '0 4px 20px rgba(244, 67, 54, 0.4)' 
+                : '0 4px 20px rgba(255, 152, 0, 0.4)',
+              animation: isRecording ? 'pulse 1s infinite' : 'none',
+              transition: 'all 0.3s ease',
             }}
           >
             {isRecording ? '⏹️' : '🎤'}
           </button>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 12 }}>
-            {isRecording ? 'Recording... Click to stop' : 'Click to record'}
+            {isRecording ? 'Tap to stop' : 'Tap to speak'}
           </p>
         </div>
 
-        {/* 播放录音 */}
-        {audioUrl && !isRecording && (
-          <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>
-              Your recording:
-            </p>
-            <audio src={audioUrl} controls style={{ width: '100%' }} />
+        {/* Success feedback */}
+        {showSuccess && !isRecording && (
+          <div style={{
+            background: '#E8F5E9',
+            color: '#2E7D32',
+            padding: '12px 24px',
+            borderRadius: 12,
+            marginBottom: 20,
+            fontWeight: 600,
+          }}>
+            ✓ Recorded! Great job!
           </div>
         )}
 
-        {/* 继续按钮 */}
+        {/* Audio player */}
+        {audioUrl && !isRecording && (
+          <div style={{ marginBottom: 24 }}>
+            <audio 
+              src={audioUrl} 
+              controls 
+              style={{ width: '100%', height: 40 }} 
+            />
+          </div>
+        )}
+
+        {/* Continue Button */}
         {audioUrl && !isRecording && (
           <button
-            className="btn btn-primary"
             onClick={handleNext}
-            style={{ fontSize: 18, padding: '14px 32px' }}
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 12,
+              padding: '16px 48px',
+              fontSize: 18,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+              transition: 'all 0.2s ease',
+            }}
           >
-            {currentIndex < wordsToPractice.length - 1 ? 'Next Word →' : 'Finish ✓'}
+            {currentIndex < wordsToPractice.length - 1 ? 'Next →' : 'Finish ✓'}
           </button>
         )}
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 }

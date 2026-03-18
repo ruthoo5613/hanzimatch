@@ -12,8 +12,10 @@ export function Home() {
 
   return (
     <div className="home-page">
-      <h1 className="home-title">Chinese Match 🀄</h1>
-      <p className="home-subtitle">Learn Chinese while playing!</p>
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>HanziMatch 🀄</h1>
+        <p className="home-subtitle">Learn Chinese while playing!</p>
+      </div>
 
       <div className="themes-section">
         <h2 className="themes-title">Choose a Topic</h2>
@@ -27,26 +29,31 @@ export function Home() {
                 key={theme.id}
                 className={`theme-card ${!unlocked ? 'locked' : ''}`}
                 onClick={() => handleSelectTheme(theme)}
+                style={{
+                  padding: 20,
+                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'white',
+                }}
               >
-                <span className="theme-icon">{theme.icon}</span>
+                <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
                 <div className="theme-info">
-                  <div className="theme-name">{theme.name}</div>
+                  <div className="theme-name" style={{ fontSize: 20 }}>{theme.name}</div>
                   <div className="theme-name-en">{theme.nameEn}</div>
                 </div>
-                {completed && <span className="theme-status">✓ Completed</span>}
-                {!unlocked && <span className="theme-status locked">🔒 Locked</span>}
+                {completed && <span className="theme-status">✓</span>}
+                {!unlocked && <span className="theme-status locked">🔒</span>}
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="themes-section">
-        <h2 className="themes-title">How to Play</h2>
-        <div className="card" style={{ textAlign: 'left', lineHeight: 1.8 }}>
-          <p>🎧 <strong>Listen & Choose</strong> - Listen to the pronunciation and pick the right character</p>
-          <p>🎮 <strong>Match & Learn</strong> - Match 3 same characters to learn new words</p>
-          <p>🗣️ <strong>Practice Speaking</strong> - Record your pronunciation and compare</p>
+      <div className="themes-section" style={{ marginTop: 32 }}>
+        <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>How to Play</div>
+          <p style={{ marginBottom: 12 }}>🎧 <strong>Listen</strong> - Hear the pronunciation</p>
+          <p style={{ marginBottom: 12 }}>👆 <strong>Choose</strong> - Pick the right character</p>
+          <p style={{ marginBottom: 12 }}>🎮 <strong>Match</strong> - Find matching words</p>
+          <p>🗣️ <strong>Speak</strong> - Practice pronunciation</p>
         </div>
       </div>
     </div>

@@ -15,12 +15,10 @@ export function Result() {
   const themeComplete = isThemeCompleted(currentTheme.id);
 
   const handleNextLevel = () => {
-    // 进入下一关
     if (currentLevel < 3) {
       useGameStore.getState().setLevel(currentLevel + 1);
       setPhase('phase1');
     } else {
-      // 本主题已完成
       setPhase('home');
     }
   };
@@ -31,46 +29,52 @@ export function Result() {
 
   return (
     <div className="result-page">
-      <div className="result-icon">🎉</div>
-      <h1 className="result-title">
-        {themeComplete ? 'Theme Completed!' : `Level ${currentLevel} Complete!`}
+      <div className="result-icon" style={{ fontSize: 100 }}>🎉</div>
+      <h1 className="result-title" style={{ fontSize: 32 }}>
+        {themeComplete ? 'Theme Complete!' : `Level ${currentLevel} Done!`}
       </h1>
       <p className="result-subtitle">
         {themeComplete 
-          ? `You finished all levels in ${currentTheme.name}!`
-          : `Great job learning ${levelWordObjects.length} new words!`
+          ? `You mastered ${currentTheme.name}!`
+          : `You learned ${levelWordObjects.length} new words!`
         }
       </p>
 
-      <div className="result-words">
-        <p className="result-words-title">Words Learned</p>
+      <div className="result-words" style={{ margin: '32px 0' }}>
+        <p className="result-words-title" style={{ marginBottom: 16 }}>Words Learned</p>
         <div className="result-words-list">
           {levelWordObjects.map(word => (
-            <div key={word.id} className="result-word">
-              {word.char} <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                {word.english}
-              </span>
+            <div 
+              key={word.id} 
+              className="result-word"
+              style={{
+                padding: '12px 20px',
+                fontSize: 18,
+              }}
+            >
+              <div style={{ fontWeight: 600 }}>{word.char}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{word.english}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="result-actions">
-        {currentLevel < 3 && themeComplete && (
-          <button className="btn btn-primary" onClick={handleNextLevel}>
-            Next Level →
-          </button>
-        )}
+      <div className="result-actions" style={{ gap: 16 }}>
+        <button 
+          className="btn btn-primary" 
+          onClick={handleNextLevel}
+          style={{ padding: '16px 48px', fontSize: 18 }}
+        >
+          {currentLevel < 3 ? 'Next Level →' : 'Continue'}
+        </button>
         
         {themeComplete && (
-          <button className="btn btn-secondary" onClick={handleBackHome}>
+          <button 
+            className="btn btn-secondary" 
+            onClick={handleBackHome}
+            style={{ padding: '14px 32px' }}
+          >
             Back to Home
-          </button>
-        )}
-
-        {!themeComplete && (
-          <button className="btn btn-primary" onClick={handleNextLevel}>
-            {currentLevel < 3 ? 'Next Level →' : 'Finish'}
           </button>
         )}
       </div>
