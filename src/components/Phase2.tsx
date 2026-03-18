@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
 import { Word } from '../types';
@@ -9,11 +9,11 @@ export function Phase2() {
   const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
   const { speak } = useSpeech();
 
-  const [board, setBoard] = useState<string[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [matchedCount, setMatchedCount] = useState(0);
+  const [board, setBoard] = useState<{ id: string; char: string }[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [foundWords, setFoundWords] = useState<string[]>([]);
   const [showCard, setShowCard] = useState<Word | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [hintIndex, setHintIndex] = useState<number | null>(null);
 
   // 获取当前关卡的字
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
@@ -23,162 +23,104 @@ export function Phase2() {
   useEffect(() => {
     if (levelWordObjects.length === 0) return;
 
-    // 每个字生成 4 个（4x4=16，3个字刚好）
-    const tiles: string[] = [];
+    // 每个目标词显示 2 次
+    const targetTiles: { id: string; char: string }[] = [];
     levelWordObjects.forEach(word => {
-      for (let i = 0; i < 4; i++) {
-        tiles.push(word.id);
-      }
+      targetTiles.push({ id: word.id, char: word.char });
+      targetTiles.push({ id: word.id, char: word.char });
     });
 
-    // 随机打乱
-    setBoard(tiles.sort(() => Math.random() - 0.5));
-  }, [levelWordObjects]);
-
-  // 检查是否有匹配
-  const checkMatch = useCallback((newBoard: string[], index: number) => {
-    const charId = newBoard[index];
-    if (!charId) return null;
-
-    // 检查水平方向
-    const row = Math.floor(index / BOARD_SIZE);
-    const col = index % BOARD_SIZE;
-
-    // 找同字符连着的
-    const matched: number[] = [index];
-
-    // 检查右边
-    for (let i = col + 1; i < BOARD_SIZE; i++) {
-      if (newBoard[row * BOARD_SIZE + i] === charId) {
-        matched.push(row * BOARD_SIZE + i);
-      } else {
-        break;
-      }
+    // 干扰词：从当前主题的其他字中随机选
+    const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
+    const干扰词数量 = 16 - targetTiles.length; // 16 - 6 = 10
+    const干扰Tiles: { id: string; char: string }[] = [];
+    
+    for (let i = 0; i < 干扰词数量; i++) {
+      const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
+      干扰Tiles.push({ id: randomWord.id, char: randomWord.char });
     }
 
-    // 检查下边
-    for (let i = row + 1; i < BOARD_SIZE; i++) {
-      if (newBoard[i * BOARD_SIZE + col] === charId) {
-        matched.push(i * BOARD_SIZE + col);
-      } else {
-        break;
-      }
-    }
-
-    // 至少3个连在一起
-    if (matched.length >= 3) {
-      return matched;
-    }
-
-    return null;
-  }, []);
+    // 混合并随机打乱
+    const allTiles = [...targetTiles, ...干扰Tiles].sort(() => Math.random() - 0.5);
+    setBoard(allTiles);
+  }, [levelWordObjects, levelWords, currentTheme]);
 
   // 处理点击
-  const handleCellClick = async (index: number) => {
-    if (isAnimating || !board[index]) return;
+  const handleCellClick = (index: number) => {
+    if (foundWords.includes(board[index].id)) return; // 已经找到的词
 
     // 第一次点击
-    if (selected === null) {
-      setSelected(index);
+    if (selectedIndex === null) {
+      setSelectedIndex(index);
+      // 高亮显示提示
+      setHintIndex(index);
+      setTimeout(() => setHintIndex(null), 1000);
       return;
     }
 
     // 第二次点击同一个 -> 取消
-    if (selected === index) {
-      setSelected(null);
+    if (selectedIndex === index) {
+      setSelectedIndex(null);
       return;
     }
 
-    // 检查是否是相同的字
-    if (board[selected] === board[index]) {
-      // 检查是否能形成3连
-      const testBoard = [...board];
-      testBoard[selected] = '';
-      testBoard[index] = '';
+    // 检查是否是相同的词（id相同）
+    if (board[selectedIndex].id === board[index].id) {
+      // 找到了一对！
+      const wordId = board[index].id;
+      const word = levelWordObjects.find(w => w.id === wordId);
       
-      const match1 = checkMatch([...board], selected);
-      const match2 = checkMatch([...board], index);
-      
-      if ((match1 && match1.length >= 3) || (match2 && match2.length >= 3)) {
-        // 形成匹配！消除
-        setIsAnimating(true);
+      if (word) {
+        // 标记为已找到
+        setFoundWords(prev => [...prev, wordId]);
         
-        const matchedIndices = match1 && match1.length >= 3 ? match1 : match2;
-        if (matchedIndices) {
-          const newBoard = [...board];
-          matchedIndices.forEach(i => {
-            newBoard[i] = '';
-          });
-          
-          // 延迟更新，让用户看到消除效果
-          await new Promise(r => setTimeout(r, 300));
-          setBoard(newBoard);
-          
-          // 显示学习卡片
-          const word = levelWordObjects.find(w => w.id === board[index]);
-          if (word) {
-            addLearnedWord(word);
-            setShowCard(word);
-            speak(word.char);
-          }
-          
-          setMatchedCount(prev => prev + matchedIndices.length);
-          setSelected(null);
-          setIsAnimating(false);
-        }
-      } else {
-        // 不能形成3连，取消选择
-        setSelected(index);
+        // 显示学习卡片
+        addLearnedWord(word);
+        setShowCard(word);
+        speak(word.char);
       }
+      
+      setSelectedIndex(null);
     } else {
-      // 不同字符，取消选择
-      setSelected(index);
+      // 不同词，取消选择
+      setSelectedIndex(index);
+      setHintIndex(index);
+      setTimeout(() => setHintIndex(null), 1000);
     }
   };
 
-  // 检查是否通关（消除80%以上）
+  // 检查是否通关（3个词都找到）
   useEffect(() => {
-    const totalTiles = BOARD_SIZE * BOARD_SIZE;
-    const emptyTiles = board.filter(t => t === '').length;
-    const matchedPercent = (emptyTiles / totalTiles) * 100;
-    
-    if (matchedPercent >= 80 && board.length > 0) {
-      setTimeout(() => setPhase('phase3'), 500);
+    if (foundWords.length === levelWordObjects.length && levelWordObjects.length > 0) {
+      setTimeout(() => setPhase('phase3'), 1000);
     }
-  }, [board, matchedCount, setPhase]);
+  }, [foundWords, levelWordObjects.length, setPhase]);
 
-  // 填充空位
-  useEffect(() => {
-    if (board.some(t => t === '')) {
-      const timer = setTimeout(() => {
-        setBoard(prev => {
-          const newBoard = [...prev];
-          // 从上方掉落
-          for (let col = 0; col < BOARD_SIZE; col++) {
-            let emptyRow = -1;
-            for (let row = BOARD_SIZE - 1; row >= 0; row--) {
-              const idx = row * BOARD_SIZE + col;
-              if (newBoard[idx] === '' && emptyRow === -1) {
-                emptyRow = row;
-              } else if (emptyRow !== -1 && newBoard[idx] !== '') {
-                // 掉落下来
-                newBoard[emptyRow * BOARD_SIZE + col] = newBoard[idx];
-                newBoard[idx] = '';
-                emptyRow--;
-              }
-            }
-            // 顶部生成新的
-            for (let row = 0; row <= emptyRow; row++) {
-              const randomWord = levelWordObjects[Math.floor(Math.random() * levelWordObjects.length)];
-              newBoard[row * BOARD_SIZE + col] = randomWord.id;
-            }
-          }
-          return newBoard;
-        });
-      }, 200);
-      return () => clearTimeout(timer);
+  // 重新开始本关
+  const handleRestart = () => {
+    setFoundWords([]);
+    setSelectedIndex(null);
+    // 重新初始化棋盘
+    if (levelWordObjects.length === 0) return;
+
+    const targetTiles: { id: string; char: string }[] = [];
+    levelWordObjects.forEach(word => {
+      targetTiles.push({ id: word.id, char: word.char });
+      targetTiles.push({ id: word.id, char: word.char });
+    });
+
+    const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
+    const干扰词数量 = 16 - targetTiles.length;
+    const干扰Tiles: { id: string; char: string }[] = [];
+    
+    for (let i = 0; i < 干扰词数量; i++) {
+      const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
+      干扰Tiles.push({ id: randomWord.id, char: randomWord.char });
     }
-  }, [board, levelWordObjects]);
+
+    const allTiles = [...targetTiles, ...干扰Tiles].sort(() => Math.random() - 0.5);
+    setBoard(allTiles);
+  };
 
   if (!currentTheme) return null;
 
@@ -186,32 +128,68 @@ export function Phase2() {
     <div className="game-container">
       <div className="game-header">
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
-        <div className="game-progress">Match: {matchedCount} / 13</div>
+        <div className="game-progress">Found: {foundWords.length} / {levelWordObjects.length}</div>
       </div>
 
       <div className="phase-indicator">
         {[1, 2, 3].map(phase => (
-          <div key={phase} className={`phase-dot ${phase === 2 ? 'active' : 'completed'}`} />
+          <div key={phase} className={`phase-dot ${phase === 2 ? 'active' : ''}`} />
         ))}
       </div>
 
       <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: 10 }}>
-        Match 3 same characters!
+        Find matching pairs of words!
       </p>
 
+      {/* 进度指示 */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
+        {levelWordObjects.map(word => (
+          <div
+            key={word.id}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 8,
+              background: foundWords.includes(word.id) ? 'var(--success)' : '#E0E0E0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 18,
+              color: foundWords.includes(word.id) ? 'white' : '#999',
+            }}
+          >
+            {foundWords.includes(word.id) ? '✓' : word.char[0]}
+          </div>
+        ))}
+      </div>
+
       <div className="board" style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)` }}>
-        {board.map((charId, index) => {
-          const word = levelWordObjects.find(w => w.id === charId);
+        {board.map((cell, index) => {
+          const isFound = foundWords.includes(cell.id);
+          const isSelected = selectedIndex === index;
+          const isHint = hintIndex === index;
+          
           return (
             <div
               key={index}
-              className={`board-cell ${selected === index ? 'selected' : ''}`}
+              className={`board-cell ${isSelected ? 'selected' : ''}`}
               onClick={() => handleCellClick(index)}
+              style={{
+                opacity: isFound ? 0.3 : 1,
+                background: isHint ? '#FFE082' : isSelected ? 'var(--primary-light)' : '#F5F5F5',
+              }}
             >
-              {word?.char || ''}
+              {cell.char}
             </div>
           );
         })}
+      </div>
+
+      {/* 重新开始按钮 */}
+      <div style={{ textAlign: 'center', marginTop: 20 }}>
+        <button className="btn btn-secondary" onClick={handleRestart}>
+          🔄 Restart
+        </button>
       </div>
 
       {/* 学习卡片弹窗 */}
