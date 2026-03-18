@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
 import type { Word } from '../types';
@@ -14,21 +14,21 @@ export function Phase2() {
   const [foundWords, setFoundWords] = useState<string[]>([]);
   const [showCard, setShowCard] = useState<Word | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
-  const levelWordObjects = currentTheme?.words.filter(w => levelWords.includes(w.id)) || [];
+  const levelWordObjects = useMemo(() => 
+    currentTheme?.words.filter(w => levelWords.includes(w.id)) || []
+  , [currentTheme, levelWords]);
 
-  // Initialize board - random words covering target words
+  // Initialize board only once when level loads
   useEffect(() => {
-    if (levelWordObjects.length === 0) return;
+    if (levelWordObjects.length === 0 || initialized) return;
 
-    // Each target word appears at least once, randomly 1-3 times
+    // Each target word appears once
     const targetTiles: { id: string; char: string }[] = [];
     levelWordObjects.forEach(word => {
-      const count = Math.floor(Math.random() * 2) + 1; // 1-2 times
-      for (let i = 0; i < count; i++) {
-        targetTiles.push({ id: word.id, char: word.char });
-      }
+      targetTiles.push({ id: word.id, char: word.char });
     });
 
     // Fill remaining spots with random words from current theme
@@ -44,18 +44,17 @@ export function Phase2() {
 
     const allTiles = [...targetTiles, ...distractorTiles].sort(() => Math.random() - 0.5);
     setBoard(allTiles);
-  }, [levelWordObjects, levelWords, currentTheme]);
+    setInitialized(true);
+  }, [levelWordObjects, levelWords, currentTheme, initialized]);
 
   const handleCellClick = (wordId: string) => {
-    if (foundWords.includes(wordId)) return; // Already found
+    if (foundWords.includes(wordId)) return;
 
     setSelectedWordId(wordId);
 
-    // Check if this word is one of the target words
     const isTargetWord = levelWordObjects.some(w => w.id === wordId);
 
     if (isTargetWord) {
-      // Correct!
       setFeedback('correct');
       const word = levelWordObjects.find(w => w.id === wordId);
       
@@ -72,7 +71,6 @@ export function Phase2() {
         setSelectedWordId(null);
       }, 1500);
     } else {
-      // Wrong - show feedback
       setFeedback('wrong');
       setTimeout(() => {
         setFeedback(null);
@@ -81,27 +79,24 @@ export function Phase2() {
     }
   };
 
-  // Check if passed
   useEffect(() => {
     if (foundWords.length === levelWordObjects.length && levelWordObjects.length > 0) {
       setTimeout(() => setPhase('phase3'), 1000);
     }
   }, [foundWords, levelWordObjects.length, setPhase]);
 
-  // Restart
   const handleRestart = () => {
     setFoundWords([]);
     setSelectedWordId(null);
     setFeedback(null);
+    setInitialized(false);
     
+    // Reinitialize
     if (levelWordObjects.length === 0) return;
 
     const targetTiles: { id: string; char: string }[] = [];
     levelWordObjects.forEach(word => {
-      const count = Math.floor(Math.random() * 2) + 1;
-      for (let i = 0; i < count; i++) {
-        targetTiles.push({ id: word.id, char: word.char });
-      }
+      targetTiles.push({ id: word.id, char: word.char });
     });
 
     const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
@@ -115,6 +110,7 @@ export function Phase2() {
 
     const allTiles = [...targetTiles, ...distractorTiles].sort(() => Math.random() - 0.5);
     setBoard(allTiles);
+    setInitialized(true);
   };
 
   if (!currentTheme) return null;
@@ -136,7 +132,6 @@ export function Phase2() {
         Tap on a word to select it!
       </p>
 
-      {/* Feedback */}
       {feedback === 'correct' && (
         <div style={{
           textAlign: 'center',
@@ -144,7 +139,6 @@ export function Phase2() {
           fontWeight: 700,
           color: 'var(--success)',
           marginBottom: 10,
-          animation: 'bounce 0.5s ease',
         }}>
           Correct! ✅
         </div>
@@ -160,7 +154,6 @@ export function Phase2() {
         </div>
       )}
 
-      {/* Progress */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
         {levelWordObjects.map(word => (
           <div
@@ -177,12 +170,11 @@ export function Phase2() {
               color: foundWords.includes(word.id) ? 'white' : '#999',
             }}
           >
-            {foundWords.includes(word.id) ? '✓' : word.char[0]}
+            {foundWords.includes(word.id) ? '✓' : word.char}
           </div>
         ))}
       </div>
 
-      {/* Board */}
       <div className="board" style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)` }}>
         {board.map((cell, index) => {
           const isFound = foundWords.includes(cell.id);
@@ -212,7 +204,6 @@ export function Phase2() {
         </button>
       </div>
 
-      {/* Learning Card */}
       {showCard && (
         <div className="word-card" onClick={() => setShowCard(null)}>
           <div className="word-card-content" onClick={e => e.stopPropagation()}>
@@ -232,13 +223,6 @@ export function Phase2() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes bounce {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-        }
-      `}</style>
     </div>
   );
 }
