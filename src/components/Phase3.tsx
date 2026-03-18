@@ -43,6 +43,10 @@ export function Phase3() {
     }
   };
 
+  const handleBack = () => {
+    setPhase('phase2');
+  };
+
   const handleRecord = () => {
     if (isRecording) {
       stopRecording();
@@ -56,6 +60,22 @@ export function Phase3() {
 
   return (
     <div className="game-container">
+      {/* 返回按钮 */}
+      <div style={{ position: 'absolute', top: 16, left: 16 }}>
+        <button 
+          onClick={handleBack}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: 24,
+            cursor: 'pointer',
+            padding: 8,
+          }}
+        >
+          ←
+        </button>
+      </div>
+
       <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
       </div>
@@ -68,56 +88,61 @@ export function Phase3() {
         <div style={{ 
           background: 'white',
           borderRadius: 20,
-          padding: '28px 20px',
+          padding: '24px 20px',
           marginBottom: 20,
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         }}>
           <div style={{ 
-            fontSize: 56, 
-            fontWeight: 700, 
-            marginBottom: 6,
-            color: 'var(--text-primary)',
-            letterSpacing: '6px',
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            marginBottom: 8,
           }}>
-            {currentWord.char}
-          </div>
-          <div style={{ fontSize: 18, color: 'var(--primary)', marginBottom: 4 }}>
-            {currentWord.pinyin}
+            <div style={{ fontSize: 14, color: 'var(--primary)', marginBottom: 2 }}>
+              {currentWord.pinyin}
+            </div>
+            <div style={{ 
+              fontSize: 44, 
+              fontWeight: 700, 
+              color: 'var(--text-primary)',
+              letterSpacing: '4px',
+            }}>
+              {currentWord.char}
+            </div>
           </div>
           <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
             {currentWord.english}
           </div>
         </div>
 
-        <button
-          onClick={() => speak(currentWord.char)}
-          style={{
-            background: 'var(--primary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: 50,
-            width: 56,
-            height: 56,
-            fontSize: 24,
-            cursor: 'pointer',
-            marginBottom: 20,
-            boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-          }}
-        >
-          🔊
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 20 }}>
+          <button
+            onClick={() => speak(currentWord.char)}
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 50,
+              width: 64,
+              height: 64,
+              fontSize: 28,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+            }}
+          >
+            🔊
+          </button>
 
-        <div style={{ marginBottom: 16 }}>
           <button
             onClick={handleRecord}
             style={{
-              width: 72,
-              height: 72,
+              width: 64,
+              height: 64,
               borderRadius: '50%',
               border: 'none',
               background: isRecording ? 'var(--error)' : 'linear-gradient(135deg, #FF9800, #F57C00)',
               color: 'white',
-              fontSize: 32,
+              fontSize: 28,
               cursor: 'pointer',
               boxShadow: isRecording 
                 ? '0 4px 20px rgba(244, 67, 54, 0.4)' 
@@ -127,10 +152,11 @@ export function Phase3() {
           >
             {isRecording ? '⏹️' : '🎤'}
           </button>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10 }}>
-            {isRecording ? 'Tap to stop' : 'Tap to speak'}
-          </p>
         </div>
+
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: -12, marginBottom: 16 }}>
+          {isRecording ? 'Tap to stop' : 'Tap to speak'}
+        </p>
 
         {showSuccess && !isRecording && (
           <div style={{

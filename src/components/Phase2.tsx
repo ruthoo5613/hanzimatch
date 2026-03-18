@@ -125,10 +125,30 @@ export function Phase2() {
     setFeedback(null);
   };
 
+  const handleBack = () => {
+    setPhase('phase1');
+  };
+
   if (!currentTheme) return null;
 
   return (
     <div className="game-container">
+      {/* 返回按钮 */}
+      <div style={{ position: 'absolute', top: 16, left: 16 }}>
+        <button 
+          onClick={handleBack}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: 24,
+            cursor: 'pointer',
+            padding: 8,
+          }}
+        >
+          ←
+        </button>
+      </div>
+
       <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
       </div>
