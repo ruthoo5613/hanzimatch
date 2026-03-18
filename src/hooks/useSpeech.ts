@@ -11,7 +11,7 @@ export function useSpeech() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-CN';
-    utterance.rate = 0.8; // 放慢一点方便学习
+    utterance.rate = 0.6; // 更慢，方便学习
     utterance.pitch = 1;
 
     utterance.onstart = () => setIsSpeaking(true);

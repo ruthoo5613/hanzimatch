@@ -3,6 +3,8 @@ import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
 import type { Word } from '../types';
 
+const CORRECT_MESSAGES = ['Great! 🎉', 'Awesome! ⭐', 'Excellent! 💪', 'Well done! 👏', 'Perfect! ✨'];
+
 export function Phase1() {
   const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
   const { speak } = useSpeech();
@@ -11,12 +13,12 @@ export function Phase1() {
   const [options, setOptions] = useState<Word[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [_isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [激励消息, set激励消息] = useState<string>('');
+  const [show激励, setShow激励] = useState(false);
 
-  // 获取当前关卡的字
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
   const targetWord = currentTheme?.words.find(w => w.id === levelWords[currentWordIndex]);
 
-  // 生成选项（正确答案 + 3个随机干扰项）
   useEffect(() => {
     if (!currentTheme || !targetWord) return;
 
@@ -28,12 +30,11 @@ export function Phase1() {
     const shuffled = [targetWord, ...others].sort(() => Math.random() - 0.5);
     setOptions(shuffled);
     
-    // 自动播放发音
     setTimeout(() => speak(targetWord.char), 500);
   }, [currentTheme, targetWord, currentWordIndex]);
 
   const handleSelect = (word: Word) => {
-    if (selectedOption !== null) return; // 已选择
+    if (selectedOption !== null) return;
 
     setSelectedOption(word.id);
     
@@ -41,20 +42,23 @@ export function Phase1() {
       setIsCorrect(true);
       addLearnedWord(targetWord);
       
-      // 正确后延迟进入下一个
+      // 随机激励消息
+      const msg = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
+      set激励消息(msg);
+      setShow激励(true);
+      
       setTimeout(() => {
+        setShow激励(false);
         if (currentWordIndex < levelWords.length - 1) {
           setCurrentWordIndex(prev => prev + 1);
           setSelectedOption(null);
           setIsCorrect(null);
         } else {
-          // 本关所有词学完了，进入三消阶段
           setPhase('phase2');
         }
-      }, 1000);
+      }, 1200);
     } else {
       setIsCorrect(false);
-      // 错误后重置
       setTimeout(() => {
         setSelectedOption(null);
         setIsCorrect(null);
@@ -91,6 +95,19 @@ export function Phase1() {
           🔊 Listen
         </button>
 
+        {/* 激励消息 */}
+        {show激励 && (
+          <div style={{
+            fontSize: 24,
+            fontWeight: 700,
+            color: 'var(--primary)',
+            marginBottom: 20,
+            animation: 'bounce 0.5s ease',
+          }}>
+            {激励消息}
+          </div>
+        )}
+
         <div className="options-grid">
           {options.map((word) => {
             let className = 'option-btn';
@@ -111,6 +128,13 @@ export function Phase1() {
           })}
         </div>
       </div>
+
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+      `}</style>
     </div>
   );
 }
