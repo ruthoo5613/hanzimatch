@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
-import { Word } from '../types';
+import type { Word } from '../types';
 
-const BOARD_SIZE = 4; // 4x4 = 16 格
+const BOARD_SIZE = 4;
 
 export function Phase2() {
   const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
@@ -15,66 +15,55 @@ export function Phase2() {
   const [showCard, setShowCard] = useState<Word | null>(null);
   const [hintIndex, setHintIndex] = useState<number | null>(null);
 
-  // 获取当前关卡的字
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
   const levelWordObjects = currentTheme?.words.filter(w => levelWords.includes(w.id)) || [];
 
-  // 初始化棋盘
+  // Initialize board
   useEffect(() => {
     if (levelWordObjects.length === 0) return;
 
-    // 每个目标词显示 2 次
+    // Each target word appears twice
     const targetTiles: { id: string; char: string }[] = [];
     levelWordObjects.forEach(word => {
       targetTiles.push({ id: word.id, char: word.char });
       targetTiles.push({ id: word.id, char: word.char });
     });
 
-    // 干扰词：从当前主题的其他字中随机选
+    // Distractor words from other words in current theme
     const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
-    const干扰词数量 = 16 - targetTiles.length; // 16 - 6 = 10
-    const干扰Tiles: { id: string; char: string }[] = [];
+    const distractorCount = 16 - targetTiles.length;
+    const distractorTiles: { id: string; char: string }[] = [];
     
-    for (let i = 0; i < 干扰词数量; i++) {
+    for (let i = 0; i < distractorCount; i++) {
       const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
-      干扰Tiles.push({ id: randomWord.id, char: randomWord.char });
+      distractorTiles.push({ id: randomWord.id, char: randomWord.char });
     }
 
-    // 混合并随机打乱
-    const allTiles = [...targetTiles, ...干扰Tiles].sort(() => Math.random() - 0.5);
+    const allTiles = [...targetTiles, ...distractorTiles].sort(() => Math.random() - 0.5);
     setBoard(allTiles);
   }, [levelWordObjects, levelWords, currentTheme]);
 
-  // 处理点击
   const handleCellClick = (index: number) => {
-    if (foundWords.includes(board[index].id)) return; // 已经找到的词
+    if (foundWords.includes(board[index].id)) return;
 
-    // 第一次点击
     if (selectedIndex === null) {
       setSelectedIndex(index);
-      // 高亮显示提示
       setHintIndex(index);
       setTimeout(() => setHintIndex(null), 1000);
       return;
     }
 
-    // 第二次点击同一个 -> 取消
     if (selectedIndex === index) {
       setSelectedIndex(null);
       return;
     }
 
-    // 检查是否是相同的词（id相同）
     if (board[selectedIndex].id === board[index].id) {
-      // 找到了一对！
       const wordId = board[index].id;
       const word = levelWordObjects.find(w => w.id === wordId);
       
       if (word) {
-        // 标记为已找到
         setFoundWords(prev => [...prev, wordId]);
-        
-        // 显示学习卡片
         addLearnedWord(word);
         setShowCard(word);
         speak(word.char);
@@ -82,25 +71,22 @@ export function Phase2() {
       
       setSelectedIndex(null);
     } else {
-      // 不同词，取消选择
       setSelectedIndex(index);
       setHintIndex(index);
       setTimeout(() => setHintIndex(null), 1000);
     }
   };
 
-  // 检查是否通关（3个词都找到）
   useEffect(() => {
     if (foundWords.length === levelWordObjects.length && levelWordObjects.length > 0) {
       setTimeout(() => setPhase('phase3'), 1000);
     }
   }, [foundWords, levelWordObjects.length, setPhase]);
 
-  // 重新开始本关
   const handleRestart = () => {
     setFoundWords([]);
     setSelectedIndex(null);
-    // 重新初始化棋盘
+    
     if (levelWordObjects.length === 0) return;
 
     const targetTiles: { id: string; char: string }[] = [];
@@ -110,15 +96,15 @@ export function Phase2() {
     });
 
     const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
-    const干扰词数量 = 16 - targetTiles.length;
-    const干扰Tiles: { id: string; char: string }[] = [];
+    const distractorCount = 16 - targetTiles.length;
+    const distractorTiles: { id: string; char: string }[] = [];
     
-    for (let i = 0; i < 干扰词数量; i++) {
+    for (let i = 0; i < distractorCount; i++) {
       const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
-      干扰Tiles.push({ id: randomWord.id, char: randomWord.char });
+      distractorTiles.push({ id: randomWord.id, char: randomWord.char });
     }
 
-    const allTiles = [...targetTiles, ...干扰Tiles].sort(() => Math.random() - 0.5);
+    const allTiles = [...targetTiles, ...distractorTiles].sort(() => Math.random() - 0.5);
     setBoard(allTiles);
   };
 
@@ -141,7 +127,6 @@ export function Phase2() {
         Find matching pairs of words!
       </p>
 
-      {/* 进度指示 */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
         {levelWordObjects.map(word => (
           <div
@@ -185,14 +170,12 @@ export function Phase2() {
         })}
       </div>
 
-      {/* 重新开始按钮 */}
       <div style={{ textAlign: 'center', marginTop: 20 }}>
         <button className="btn btn-secondary" onClick={handleRestart}>
           🔄 Restart
         </button>
       </div>
 
-      {/* 学习卡片弹窗 */}
       {showCard && (
         <div className="word-card" onClick={() => setShowCard(null)}>
           <div className="word-card-content" onClick={e => e.stopPropagation()}>

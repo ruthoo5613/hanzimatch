@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
 import { useRecorder } from '../hooks/useRecorder';
@@ -9,7 +9,7 @@ export function Phase3() {
   const { isRecording, audioUrl, startRecording, stopRecording, clearRecording } = useRecorder();
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [recorded, setRecorded] = useState(false);
+  const [_recorded, setRecorded] = useState(false);
 
   // 获取当前关卡的字
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];

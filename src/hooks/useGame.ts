@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { GameState, GamePhase, Theme, Word } from '../types';
+import type { GameState, GamePhase, Theme, Word } from '../types';
 import { scenicTheme, restaurantTheme, taxiTheme } from '../data';
 
 interface GameStore extends GameState {
@@ -51,7 +51,6 @@ export const useGameStore = create<GameStore>()(
       })),
       
       completeLevel: (themeId: string, levelId: number) => set((state) => {
-        const key = `${themeId}_${levelId}`;
         const already = state.completedLevels.some(
           c => c.themeId === themeId && c.levelId === levelId
         );

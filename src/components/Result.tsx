@@ -4,18 +4,14 @@ export function Result() {
   const { 
     currentTheme, 
     currentLevel, 
-    learnedWords,
     setPhase,
-    isLevelCompleted,
     isThemeCompleted,
-    themes,
   } = useGameStore();
 
   if (!currentTheme) return null;
 
   const levelWords = currentTheme.levels[currentLevel - 1].wordIds;
   const levelWordObjects = currentTheme.words.filter(w => levelWords.includes(w.id));
-  const completed = isLevelCompleted(currentTheme.id, currentLevel);
   const themeComplete = isThemeCompleted(currentTheme.id);
 
   const handleNextLevel = () => {

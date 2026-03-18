@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
-import { Word } from '../types';
+import type { Word } from '../types';
 
 export function Phase1() {
   const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
@@ -10,7 +10,7 @@ export function Phase1() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [options, setOptions] = useState<Word[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [_isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   // 获取当前关卡的字
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];

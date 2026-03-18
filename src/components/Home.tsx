@@ -1,5 +1,5 @@
 import { useGameStore } from '../hooks/useGame';
-import { Theme } from '../types';
+import type { Theme } from '../types';
 
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
