@@ -1,116 +1,139 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
-import type { Word } from '../types';
 
-const BOARD_SIZE = 4;
+interface MatchPair {
+  wordId: string;
+  matched: boolean;
+}
+
+// 图片映射 - 写实风格
+const IMAGE_MAP: Record<string, string> = {
+  // 景区游玩
+  '门票': 'https://images.unsplash.com/photo-1580666889329-5ebeb61dd3fe?w=200&h=200&fit=crop',
+  '景点': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop',
+  '拍照': 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&h=200&fit=crop',
+  '爬山': 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=200&h=200&fit=crop',
+  '风景': 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=200&h=200&fit=crop',
+  '排队': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200&h=200&fit=crop',
+  '索道': 'https://images.unsplash.com/photo-1527809190084-9c3d0e1e91f0?w=200&h=200&fit=crop',
+  '出口': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop',
+  '入口': 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=200&h=200&fit=crop',
+  
+  // 餐厅吃饭
+  '菜单': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&h=200&fit=crop',
+  '点菜': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&h=200&fit=crop',
+  '买单': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=200&h=200&fit=crop',
+  '好吃': 'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=200&h=200&fit=crop',
+  '辣': 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&h=200&fit=crop',
+  '不辣': 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=200&h=200&fit=crop',
+  '水': 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&h=200&fit=crop',
+  '筷子': 'https://images.unsplash.com/photo-1583301286816-f4f92d0ef201?w=200&h=200&fit=crop',
+  '勺子': 'https://images.unsplash.com/photo-1600658495792-92f9529685c9?w=200&h=200&fit=crop',
+  
+  // 打车
+  '司机': 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=200&h=200&fit=crop',
+  '目的地': 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=200&h=200&fit=crop',
+  '多少钱': 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=200&fit=crop',
+  '便宜': 'https://images.unsplash.com/photo-1607501523781-6188bc29d3c4?w=200&h=200&fit=crop',
+  '贵': 'https://images.unsplash.com/photo-1556484687-8ac334c89cf3?w=200&h=200&fit=crop',
+  '绕路': 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=200&h=200&fit=crop',
+  '停车': 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=200&h=200&fit=crop',
+  '机场': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=200&h=200&fit=crop',
+  '火车站': 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=200&h=200&fit=crop',
+};
 
 export function Phase2() {
   const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
   const { speak } = useSpeech();
 
-  const [board, setBoard] = useState<{ id: string; char: string }[]>([]);
-  const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
-  const [foundWords, setFoundWords] = useState<string[]>([]);
-  const [showCard, setShowCard] = useState<Word | null>(null);
+  const [matches, setMatches] = useState<MatchPair[]>([]);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
-  const [initialized, setInitialized] = useState(false);
+  const [allMatched, setAllMatched] = useState(false);
 
   const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
   const levelWordObjects = useMemo(() => 
     currentTheme?.words.filter(w => levelWords.includes(w.id)) || []
   , [currentTheme, levelWords]);
 
-  // Initialize board only once when level loads
+  // Initialize matches
   useEffect(() => {
-    if (levelWordObjects.length === 0 || initialized) return;
+    const initial = levelWordObjects.map(w => ({ wordId: w.id, matched: false }));
+    setMatches(initial);
+    setAllMatched(false);
+  }, [levelWordObjects]);
 
-    // Each target word appears once
-    const targetTiles: { id: string; char: string }[] = [];
-    levelWordObjects.forEach(word => {
-      targetTiles.push({ id: word.id, char: word.char });
-    });
+  // Shuffle images
+  const shuffledImages = useMemo(() => {
+    const images = levelWordObjects.map(w => ({
+      wordId: w.id,
+      char: w.char,
+      image: IMAGE_MAP[w.char] || 'https://via.placeholder.com/200',
+    }));
+    return images.sort(() => Math.random() - 0.5);
+  }, [levelWordObjects]);
 
-    // Fill remaining spots with random words from current theme
-    const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
-    const filledCount = targetTiles.length;
-    const distractorCount = 16 - filledCount;
-    const distractorTiles: { id: string; char: string }[] = [];
-    
-    for (let i = 0; i < distractorCount; i++) {
-      const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
-      distractorTiles.push({ id: randomWord.id, char: randomWord.char });
-    }
+  const handleWordClick = (wordId: string) => {
+    if (matches.find(m => m.wordId === wordId)?.matched) return;
+    setSelectedWord(wordId);
+    checkMatch(wordId, selectedImage);
+  };
 
-    const allTiles = [...targetTiles, ...distractorTiles].sort(() => Math.random() - 0.5);
-    setBoard(allTiles);
-    setInitialized(true);
-  }, [levelWordObjects, levelWords, currentTheme, initialized]);
+  const handleImageClick = (wordId: string) => {
+    if (matches.find(m => m.wordId === wordId)?.matched) return;
+    setSelectedImage(wordId);
+    checkMatch(selectedWord, wordId);
+  };
 
-  const handleCellClick = (wordId: string) => {
-    if (foundWords.includes(wordId)) return;
+  const checkMatch = (wordId: string | null, imgWordId: string | null) => {
+    if (!wordId || !imgWordId) return;
 
-    setSelectedWordId(wordId);
-
-    const isTargetWord = levelWordObjects.some(w => w.id === wordId);
-
-    if (isTargetWord) {
+    if (wordId === imgWordId) {
+      // Correct match!
       setFeedback('correct');
       const word = levelWordObjects.find(w => w.id === wordId);
-      
       if (word) {
         addLearnedWord(word);
-        setShowCard(word);
         speak(word.char);
       }
 
-      setFoundWords(prev => [...prev, wordId]);
-      
+      setMatches(prev => prev.map(m => 
+        m.wordId === wordId ? { ...m, matched: true } : m
+      ));
+
       setTimeout(() => {
         setFeedback(null);
-        setSelectedWordId(null);
-      }, 1500);
+        setSelectedWord(null);
+        setSelectedImage(null);
+      }, 1000);
     } else {
+      // Wrong match
       setFeedback('wrong');
       setTimeout(() => {
         setFeedback(null);
-        setSelectedWordId(null);
+        setSelectedWord(null);
+        setSelectedImage(null);
       }, 800);
     }
   };
 
+  // Check if all matched
   useEffect(() => {
-    if (foundWords.length === levelWordObjects.length && levelWordObjects.length > 0) {
-      setTimeout(() => setPhase('phase3'), 1000);
+    if (matches.length > 0 && matches.every(m => m.matched)) {
+      setAllMatched(true);
+      setTimeout(() => setPhase('phase3'), 1500);
     }
-  }, [foundWords, levelWordObjects.length, setPhase]);
+  }, [matches, setPhase]);
 
   const handleRestart = () => {
-    setFoundWords([]);
-    setSelectedWordId(null);
+    const initial = levelWordObjects.map(w => ({ wordId: w.id, matched: false }));
+    setMatches(initial);
+    setAllMatched(false);
+    setSelectedWord(null);
+    setSelectedImage(null);
     setFeedback(null);
-    setInitialized(false);
-    
-    // Reinitialize
-    if (levelWordObjects.length === 0) return;
-
-    const targetTiles: { id: string; char: string }[] = [];
-    levelWordObjects.forEach(word => {
-      targetTiles.push({ id: word.id, char: word.char });
-    });
-
-    const otherWords = currentTheme!.words.filter(w => !levelWords.includes(w.id));
-    const distractorCount = 16 - targetTiles.length;
-    const distractorTiles: { id: string; char: string }[] = [];
-    
-    for (let i = 0; i < distractorCount; i++) {
-      const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
-      distractorTiles.push({ id: randomWord.id, char: randomWord.char });
-    }
-
-    const allTiles = [...targetTiles, ...distractorTiles].sort(() => Math.random() - 0.5);
-    setBoard(allTiles);
-    setInitialized(true);
   };
 
   if (!currentTheme) return null;
@@ -119,7 +142,9 @@ export function Phase2() {
     <div className="game-container">
       <div className="game-header">
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
-        <div className="game-progress">Found: {foundWords.length} / {levelWordObjects.length}</div>
+        <div className="game-progress">
+          {matches.filter(m => m.matched).length} / {levelWordObjects.length}
+        </div>
       </div>
 
       <div className="phase-indicator">
@@ -128,19 +153,20 @@ export function Phase2() {
         ))}
       </div>
 
-      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: 10 }}>
-        Tap on a word to select it!
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: 16 }}>
+        🔗 Match words with pictures!
       </p>
 
+      {/* Feedback */}
       {feedback === 'correct' && (
         <div style={{
           textAlign: 'center',
-          fontSize: 24,
+          fontSize: 20,
           fontWeight: 700,
           color: 'var(--success)',
           marginBottom: 10,
         }}>
-          Correct! ✅
+          ✓ Correct!
         </div>
       )}
       {feedback === 'wrong' && (
@@ -150,79 +176,118 @@ export function Phase2() {
           color: 'var(--error)',
           marginBottom: 10,
         }}>
-          Try again! ❌
+          ✗ Try again!
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
-        {levelWordObjects.map(word => (
-          <div
-            key={word.id}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 8,
-              background: foundWords.includes(word.id) ? 'var(--success)' : '#E0E0E0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 18,
-              color: foundWords.includes(word.id) ? 'white' : '#999',
-            }}
-          >
-            {foundWords.includes(word.id) ? '✓' : word.char}
-          </div>
-        ))}
+      {/* Matching Area */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        padding: '0 10px',
+        gap: 20,
+      }}>
+        {/* Left: Words */}
+        <div style={{ flex: 1 }}>
+          {levelWordObjects.map(word => {
+            const isMatched = matches.find(m => m.wordId === word.id)?.matched;
+            const isSelected = selectedWord === word.id;
+            
+            return (
+              <div
+                key={word.id}
+                onClick={() => handleWordClick(word.id)}
+                style={{
+                  padding: '16px 12px',
+                  marginBottom: 12,
+                  borderRadius: 12,
+                  background: isMatched 
+                    ? '#E8F5E9' 
+                    : isSelected 
+                      ? '#E3F2FD' 
+                      : '#F5F5F5',
+                  border: isMatched 
+                    ? '2px solid #4CAF50' 
+                    : isSelected 
+                      ? '2px solid #2196F3' 
+                      : '2px solid transparent',
+                  cursor: isMatched ? 'default' : 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                  opacity: isMatched ? 0.6 : 1,
+                }}
+              >
+                <div style={{ fontSize: 24, fontWeight: 600 }}>{word.char}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{word.pinyin}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right: Images */}
+        <div style={{ flex: 1 }}>
+          {shuffledImages.map(item => {
+            const isMatched = matches.find(m => m.wordId === item.wordId)?.matched;
+            const isSelected = selectedImage === item.wordId;
+            
+            return (
+              <div
+                key={item.wordId}
+                onClick={() => handleImageClick(item.wordId)}
+                style={{
+                  marginBottom: 12,
+                  borderRadius: 12,
+                  background: isMatched 
+                    ? '#E8F5E9' 
+                    : isSelected 
+                      ? '#E3F2FD' 
+                      : 'white',
+                  border: isMatched 
+                    ? '3px solid #4CAF50' 
+                    : isSelected 
+                      ? '3px solid #2196F3' 
+                      : '2px solid #E0E0E0',
+                  cursor: isMatched ? 'default' : 'pointer',
+                  overflow: 'hidden',
+                  transition: 'all 0.2s ease',
+                  opacity: isMatched ? 0.6 : 1,
+                }}
+              >
+                <img 
+                  src={item.image} 
+                  alt={item.char}
+                  style={{
+                    width: '100%',
+                    height: 70,
+                    objectFit: 'cover',
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="board" style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)` }}>
-        {board.map((cell, index) => {
-          const isFound = foundWords.includes(cell.id);
-          const isSelected = selectedWordId === cell.id;
-          
-          return (
-            <div
-              key={index}
-              className="board-cell"
-              onClick={() => handleCellClick(cell.id)}
-              style={{
-                opacity: isFound ? 0.3 : 1,
-                background: isSelected 
-                  ? (feedback === 'correct' ? '#81C784' : feedback === 'wrong' ? '#E57373' : 'var(--primary-light)')
-                  : '#F5F5F5',
-              }}
-            >
-              {cell.char}
-            </div>
-          );
-        })}
-      </div>
+      {/* Success */}
+      {allMatched && (
+        <div style={{
+          textAlign: 'center',
+          marginTop: 20,
+          padding: 16,
+          background: '#E8F5E9',
+          borderRadius: 12,
+          color: '#2E7D32',
+          fontWeight: 600,
+        }}>
+          🎉 All matched! Great job!
+        </div>
+      )}
 
       <div style={{ textAlign: 'center', marginTop: 20 }}>
         <button className="btn btn-secondary" onClick={handleRestart}>
           🔄 Restart
         </button>
       </div>
-
-      {showCard && (
-        <div className="word-card" onClick={() => setShowCard(null)}>
-          <div className="word-card-content" onClick={e => e.stopPropagation()}>
-            <div className="word-char">{showCard.char}</div>
-            <div className="word-pinyin">{showCard.pinyin}</div>
-            <div className="word-english">{showCard.english}</div>
-            <div className="word-actions">
-              <button className="word-btn speak" onClick={(e) => { e.stopPropagation(); speak(showCard.char); }}>
-                <span className="word-btn-icon">🔊</span>
-                <span className="word-btn-text">Listen</span>
-              </button>
-              <button className="word-btn close" onClick={() => setShowCard(null)}>
-                <span className="word-btn-icon">✓</span>
-                <span className="word-btn-text">Continue</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
