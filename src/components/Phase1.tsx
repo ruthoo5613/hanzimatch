@@ -6,7 +6,7 @@ import type { Word } from '../types';
 const CORRECT_MESSAGES = ['Great! 🎉', 'Awesome! ⭐', 'Excellent! 💪', 'Well done! 👏', 'Perfect! ✨'];
 
 export function Phase1() {
-  const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
+  const { currentTheme, currentLevel, setPhase, addLearnedWord, getRandomWordsForLevel } = useGameStore();
   const { speak } = useSpeech();
   
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -16,8 +16,9 @@ export function Phase1() {
   const [激励消息, set激励消息] = useState<string>('');
   const [show激励, setShow激励] = useState(false);
 
-  const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
-  const targetWord = currentTheme?.words.find(w => w.id === levelWords[currentWordIndex]);
+  // 每次进入关卡时随机选择3个词
+  const levelWords = currentTheme ? getRandomWordsForLevel(currentTheme, currentLevel) : [];
+  const targetWord = levelWords[currentWordIndex];
 
   useEffect(() => {
     if (!currentTheme || !targetWord) return;
@@ -74,7 +75,6 @@ export function Phase1() {
 
   return (
     <div className="game-container">
-      {/* 返回按钮 */}
       <div style={{ position: 'absolute', top: 16, left: 16 }}>
         <button 
           onClick={handleBack}

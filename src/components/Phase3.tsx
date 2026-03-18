@@ -4,24 +4,22 @@ import { useSpeech } from '../hooks/useSpeech';
 import { useRecorder } from '../hooks/useRecorder';
 
 export function Phase3() {
-  const { currentTheme, currentLevel, completeLevel, unlockTheme, setPhase } = useGameStore();
+  const { currentTheme, currentLevel, completeLevel, unlockTheme, setPhase, getRandomWordsForLevel } = useGameStore();
   const { speak } = useSpeech();
   const { isRecording, audioUrl, startRecording, stopRecording, clearRecording } = useRecorder();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
-  const wordsToPractice = currentTheme?.words.filter(w => levelWords.includes(w.id)) || [];
+  // 使用随机词
+  const wordsToPractice = currentTheme ? getRandomWordsForLevel(currentTheme, currentLevel) : [];
   const currentWord = wordsToPractice[currentIndex];
 
   const handleComplete = () => {
     if (!currentTheme) return;
     
-    // 先完成关卡
     completeLevel(currentTheme.id, currentLevel);
     
-    // 解锁下一个主题
     if (currentLevel === 3) {
       if (currentTheme.id === 'scenic') {
         unlockTheme('restaurant');
@@ -39,7 +37,6 @@ export function Phase3() {
       setShowSuccess(false);
     } else {
       handleComplete();
-      // 延迟一下确保状态更新后再跳转
       setTimeout(() => {
         setPhase('home');
       }, 100);

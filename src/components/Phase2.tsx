@@ -38,7 +38,7 @@ const IMAGE_MAP: Record<string, string> = {
 };
 
 export function Phase2() {
-  const { currentTheme, currentLevel, setPhase, addLearnedWord } = useGameStore();
+  const { currentTheme, currentLevel, setPhase, addLearnedWord, getRandomWordsForLevel } = useGameStore();
   const { speak } = useSpeech();
 
   const [matches, setMatches] = useState<MatchPair[]>([]);
@@ -47,10 +47,8 @@ export function Phase2() {
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [allMatched, setAllMatched] = useState(false);
 
-  const levelWords = currentTheme?.levels[currentLevel - 1].wordIds || [];
-  const levelWordObjects = useMemo(() => 
-    currentTheme?.words.filter(w => levelWords.includes(w.id)) || []
-  , [currentTheme, levelWords]);
+  // 使用随机词
+  const levelWordObjects = currentTheme ? getRandomWordsForLevel(currentTheme, currentLevel) : [];
 
   useEffect(() => {
     const initial = levelWordObjects.map(w => ({ wordId: w.id, matched: false }));
@@ -133,7 +131,6 @@ export function Phase2() {
 
   return (
     <div className="game-container">
-      {/* 返回按钮 */}
       <div style={{ position: 'absolute', top: 16, left: 16 }}>
         <button 
           onClick={handleBack}

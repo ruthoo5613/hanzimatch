@@ -15,6 +15,7 @@ interface GameStore extends GameState {
   isThemeUnlocked: (themeId: string) => boolean;
   isLevelCompleted: (themeId: string, levelId: number) => boolean;
   isThemeCompleted: (themeId: string) => boolean;
+  getRandomWordsForLevel: (theme: Theme, level: number) => Word[];
 }
 
 const initialState: GameState = {
@@ -85,6 +86,12 @@ export const useGameStore = create<GameStore>()(
       
       isThemeCompleted: (themeId: string) => {
         return get().completedLevels.some(c => c.themeId === themeId && c.levelId === 3);
+      },
+      
+      // 每次随机获取3个词
+      getRandomWordsForLevel: (theme: Theme, _level: number) => {
+        const shuffled = [...theme.words].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 3);
       },
     }),
     {
