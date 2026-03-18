@@ -18,6 +18,7 @@ export function Phase3() {
   const handleComplete = () => {
     if (!currentTheme) return;
     
+    // 先完成关卡
     completeLevel(currentTheme.id, currentLevel);
     
     // 解锁下一个主题
@@ -38,8 +39,10 @@ export function Phase3() {
       setShowSuccess(false);
     } else {
       handleComplete();
-      // 返回首页
-      setPhase('home');
+      // 延迟一下确保状态更新后再跳转
+      setTimeout(() => {
+        setPhase('home');
+      }, 100);
     }
   };
 
@@ -60,7 +63,6 @@ export function Phase3() {
 
   return (
     <div className="game-container">
-      {/* 返回按钮 */}
       <div style={{ position: 'absolute', top: 16, left: 16 }}>
         <button 
           onClick={handleBack}

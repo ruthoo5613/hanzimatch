@@ -65,17 +65,18 @@ export const useGameStore = create<GameStore>()(
       
       isThemeUnlocked: (themeId: string) => {
         const state = get();
-        // 景区默认解锁，后续主题需要前置主题通关
+        // 景区默认解锁
         if (themeId === 'scenic') return true;
+        // 检查是否已解锁
+        if (state.unlockedThemes.includes(themeId)) return true;
+        // 检查前置主题是否通关
         if (themeId === 'restaurant') {
-          // 需要景区3关通关
           return state.completedLevels.some(c => c.themeId === 'scenic' && c.levelId === 3);
         }
         if (themeId === 'taxi') {
-          // 需要餐厅3关通关
           return state.completedLevels.some(c => c.themeId === 'restaurant' && c.levelId === 3);
         }
-        return state.unlockedThemes.includes(themeId);
+        return false;
       },
       
       isLevelCompleted: (themeId: string, levelId: number) => {
