@@ -7,9 +7,7 @@ interface MatchPair {
   matched: boolean;
 }
 
-// 图片映射 - 写实风格
 const IMAGE_MAP: Record<string, string> = {
-  // 景区游玩
   '门票': 'https://images.unsplash.com/photo-1580666889329-5ebeb61dd3fe?w=200&h=200&fit=crop',
   '景点': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop',
   '拍照': 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&h=200&fit=crop',
@@ -19,8 +17,6 @@ const IMAGE_MAP: Record<string, string> = {
   '索道': 'https://images.unsplash.com/photo-1527809190084-9c3d0e1e91f0?w=200&h=200&fit=crop',
   '出口': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop',
   '入口': 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=200&h=200&fit=crop',
-  
-  // 餐厅吃饭
   '菜单': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&h=200&fit=crop',
   '点菜': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&h=200&fit=crop',
   '买单': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=200&h=200&fit=crop',
@@ -30,8 +26,6 @@ const IMAGE_MAP: Record<string, string> = {
   '水': 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&h=200&fit=crop',
   '筷子': 'https://images.unsplash.com/photo-1583301286816-f4f92d0ef201?w=200&h=200&fit=crop',
   '勺子': 'https://images.unsplash.com/photo-1600658495792-92f9529685c9?w=200&h=200&fit=crop',
-  
-  // 打车
   '司机': 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=200&h=200&fit=crop',
   '目的地': 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=200&h=200&fit=crop',
   '多少钱': 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&h=200&fit=crop',
@@ -58,14 +52,12 @@ export function Phase2() {
     currentTheme?.words.filter(w => levelWords.includes(w.id)) || []
   , [currentTheme, levelWords]);
 
-  // Initialize matches
   useEffect(() => {
     const initial = levelWordObjects.map(w => ({ wordId: w.id, matched: false }));
     setMatches(initial);
     setAllMatched(false);
   }, [levelWordObjects]);
 
-  // Shuffle images
   const shuffledImages = useMemo(() => {
     const images = levelWordObjects.map(w => ({
       wordId: w.id,
@@ -91,7 +83,6 @@ export function Phase2() {
     if (!wordId || !imgWordId) return;
 
     if (wordId === imgWordId) {
-      // Correct match!
       setFeedback('correct');
       const word = levelWordObjects.find(w => w.id === wordId);
       if (word) {
@@ -109,7 +100,6 @@ export function Phase2() {
         setSelectedImage(null);
       }, 1000);
     } else {
-      // Wrong match
       setFeedback('wrong');
       setTimeout(() => {
         setFeedback(null);
@@ -119,7 +109,6 @@ export function Phase2() {
     }
   };
 
-  // Check if all matched
   useEffect(() => {
     if (matches.length > 0 && matches.every(m => m.matched)) {
       setAllMatched(true);
@@ -140,24 +129,14 @@ export function Phase2() {
 
   return (
     <div className="game-container">
-      <div className="game-header">
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
-        <div className="game-progress">
-          {matches.filter(m => m.matched).length} / {levelWordObjects.length}
-        </div>
-      </div>
-
-      <div className="phase-indicator">
-        {[1, 2, 3].map(phase => (
-          <div key={phase} className={`phase-dot ${phase === 2 ? 'active' : ''}`} />
-        ))}
       </div>
 
       <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: 16 }}>
         🔗 Match words with pictures!
       </p>
 
-      {/* Feedback */}
       {feedback === 'correct' && (
         <div style={{
           textAlign: 'center',
@@ -180,14 +159,12 @@ export function Phase2() {
         </div>
       )}
 
-      {/* Matching Area */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
-        padding: '0 10px',
-        gap: 20,
+        padding: '0 8px',
+        gap: 16,
       }}>
-        {/* Left: Words */}
         <div style={{ flex: 1 }}>
           {levelWordObjects.map(word => {
             const isMatched = matches.find(m => m.wordId === word.id)?.matched;
@@ -198,9 +175,9 @@ export function Phase2() {
                 key={word.id}
                 onClick={() => handleWordClick(word.id)}
                 style={{
-                  padding: '16px 12px',
-                  marginBottom: 12,
-                  borderRadius: 12,
+                  padding: '12px 8px',
+                  marginBottom: 10,
+                  borderRadius: 10,
                   background: isMatched 
                     ? '#E8F5E9' 
                     : isSelected 
@@ -217,14 +194,13 @@ export function Phase2() {
                   opacity: isMatched ? 0.6 : 1,
                 }}
               >
-                <div style={{ fontSize: 24, fontWeight: 600 }}>{word.char}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{word.pinyin}</div>
+                <div style={{ fontSize: 20, fontWeight: 600 }}>{word.char}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{word.pinyin}</div>
               </div>
             );
           })}
         </div>
 
-        {/* Right: Images */}
         <div style={{ flex: 1 }}>
           {shuffledImages.map(item => {
             const isMatched = matches.find(m => m.wordId === item.wordId)?.matched;
@@ -235,17 +211,17 @@ export function Phase2() {
                 key={item.wordId}
                 onClick={() => handleImageClick(item.wordId)}
                 style={{
-                  marginBottom: 12,
-                  borderRadius: 12,
+                  marginBottom: 10,
+                  borderRadius: 10,
                   background: isMatched 
                     ? '#E8F5E9' 
                     : isSelected 
                       ? '#E3F2FD' 
                       : 'white',
                   border: isMatched 
-                    ? '3px solid #4CAF50' 
+                    ? '2px solid #4CAF50' 
                     : isSelected 
-                      ? '3px solid #2196F3' 
+                      ? '2px solid #2196F3' 
                       : '2px solid #E0E0E0',
                   cursor: isMatched ? 'default' : 'pointer',
                   overflow: 'hidden',
@@ -258,7 +234,7 @@ export function Phase2() {
                   alt={item.char}
                   style={{
                     width: '100%',
-                    height: 70,
+                    height: 55,
                     objectFit: 'cover',
                   }}
                 />
@@ -268,23 +244,22 @@ export function Phase2() {
         </div>
       </div>
 
-      {/* Success */}
       {allMatched && (
         <div style={{
           textAlign: 'center',
-          marginTop: 20,
-          padding: 16,
+          marginTop: 16,
+          padding: 12,
           background: '#E8F5E9',
-          borderRadius: 12,
+          borderRadius: 10,
           color: '#2E7D32',
           fontWeight: 600,
         }}>
-          🎉 All matched! Great job!
+          🎉 All matched!
         </div>
       )}
 
-      <div style={{ textAlign: 'center', marginTop: 20 }}>
-        <button className="btn btn-secondary" onClick={handleRestart}>
+      <div style={{ textAlign: 'center', marginTop: 16 }}>
+        <button className="btn btn-secondary" onClick={handleRestart} style={{ padding: '10px 20px' }}>
           🔄 Restart
         </button>
       </div>

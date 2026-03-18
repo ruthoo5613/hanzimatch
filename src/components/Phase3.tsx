@@ -4,7 +4,7 @@ import { useSpeech } from '../hooks/useSpeech';
 import { useRecorder } from '../hooks/useRecorder';
 
 export function Phase3() {
-  const { currentTheme, currentLevel, completeLevel, unlockTheme } = useGameStore();
+  const { currentTheme, currentLevel, completeLevel, unlockTheme, setPhase } = useGameStore();
   const { speak } = useSpeech();
   const { isRecording, audioUrl, startRecording, stopRecording, clearRecording } = useRecorder();
 
@@ -20,6 +20,7 @@ export function Phase3() {
     
     completeLevel(currentTheme.id, currentLevel);
     
+    // 解锁下一个主题
     if (currentLevel === 3) {
       if (currentTheme.id === 'scenic') {
         unlockTheme('restaurant');
@@ -37,6 +38,8 @@ export function Phase3() {
       setShowSuccess(false);
     } else {
       handleComplete();
+      // 返回首页
+      setPhase('home');
     }
   };
 
@@ -53,64 +56,39 @@ export function Phase3() {
 
   return (
     <div className="game-container">
-      <div className="game-header">
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
-        <div className="game-progress">{currentIndex + 1} / {wordsToPractice.length}</div>
-      </div>
-
-      <div className="phase-indicator">
-        {[1, 2, 3].map(phase => (
-          <div key={phase} className={`phase-dot ${phase === 3 ? 'active' : 'completed'}`} />
-        ))}
       </div>
 
       <div style={{ textAlign: 'center', padding: '0 20px' }}>
-        <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 24 }}>
+        <p style={{ fontSize: 16, color: 'var(--text-secondary)', marginBottom: 20 }}>
           🎤 Practice speaking
         </p>
 
-        {/* Progress dots */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
-          {wordsToPractice.map((word, idx) => (
-            <div
-              key={word.id}
-              style={{
-                width: idx === currentIndex ? 24 : 8,
-                height: 8,
-                borderRadius: 4,
-                background: idx < currentIndex ? 'var(--primary)' : idx === currentIndex ? 'var(--primary)' : '#E0E0E0',
-                transition: 'all 0.3s ease',
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Word Card */}
-        <div style={{
+        <div style={{ 
           background: 'white',
           borderRadius: 20,
-          padding: '32px 24px',
-          marginBottom: 24,
+          padding: '28px 20px',
+          marginBottom: 20,
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         }}>
           <div style={{ 
-            fontSize: 72, 
+            fontSize: 56, 
             fontWeight: 700, 
-            marginBottom: 8,
+            marginBottom: 6,
             color: 'var(--text-primary)',
-            letterSpacing: '8px',
+            letterSpacing: '6px',
           }}>
             {currentWord.char}
           </div>
-          <div style={{ fontSize: 20, color: 'var(--primary)', marginBottom: 8 }}>
+          <div style={{ fontSize: 18, color: 'var(--primary)', marginBottom: 4 }}>
             {currentWord.pinyin}
           </div>
-          <div style={{ fontSize: 16, color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
             {currentWord.english}
           </div>
         </div>
 
-        {/* Play Button */}
         <button
           onClick={() => speak(currentWord.char)}
           style={{
@@ -118,71 +96,62 @@ export function Phase3() {
             color: 'white',
             border: 'none',
             borderRadius: 50,
-            width: 64,
-            height: 64,
-            fontSize: 28,
+            width: 56,
+            height: 56,
+            fontSize: 24,
             cursor: 'pointer',
-            marginBottom: 24,
+            marginBottom: 20,
             boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-            transition: 'transform 0.2s ease',
           }}
         >
           🔊
         </button>
 
-        {/* Mic Button */}
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 16 }}>
           <button
             onClick={handleRecord}
             style={{
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               borderRadius: '50%',
               border: 'none',
               background: isRecording ? 'var(--error)' : 'linear-gradient(135deg, #FF9800, #F57C00)',
               color: 'white',
-              fontSize: 36,
+              fontSize: 32,
               cursor: 'pointer',
               boxShadow: isRecording 
                 ? '0 4px 20px rgba(244, 67, 54, 0.4)' 
                 : '0 4px 20px rgba(255, 152, 0, 0.4)',
               animation: isRecording ? 'pulse 1s infinite' : 'none',
-              transition: 'all 0.3s ease',
             }}
           >
             {isRecording ? '⏹️' : '🎤'}
           </button>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 12 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10 }}>
             {isRecording ? 'Tap to stop' : 'Tap to speak'}
           </p>
         </div>
 
-        {/* Success feedback */}
         {showSuccess && !isRecording && (
           <div style={{
             background: '#E8F5E9',
             color: '#2E7D32',
-            padding: '12px 24px',
-            borderRadius: 12,
-            marginBottom: 20,
+            padding: '10px 20px',
+            borderRadius: 10,
+            marginBottom: 16,
             fontWeight: 600,
+            fontSize: 14,
           }}>
-            ✓ Recorded! Great job!
+            ✓ Recorded!
           </div>
         )}
 
-        {/* Audio player */}
         {audioUrl && !isRecording && (
-          <div style={{ marginBottom: 24 }}>
-            <audio 
-              src={audioUrl} 
-              controls 
-              style={{ width: '100%', height: 40 }} 
-            />
+          <div style={{ marginBottom: 16 }}>
+            <audio src={audioUrl} controls style={{ width: '100%', height: 36 }} />
           </div>
         )}
 
-        {/* Continue Button */}
         {audioUrl && !isRecording && (
           <button
             onClick={handleNext}
@@ -191,12 +160,11 @@ export function Phase3() {
               color: 'white',
               border: 'none',
               borderRadius: 12,
-              padding: '16px 48px',
-              fontSize: 18,
+              padding: '14px 40px',
+              fontSize: 16,
               fontWeight: 600,
               cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-              transition: 'all 0.2s ease',
             }}
           >
             {currentIndex < wordsToPractice.length - 1 ? 'Next →' : 'Finish ✓'}

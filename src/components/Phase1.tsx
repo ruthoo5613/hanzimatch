@@ -70,31 +70,8 @@ export function Phase1() {
 
   return (
     <div className="game-container">
-      <div className="game-header">
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <div className="game-title">{currentTheme.name} - Level {currentLevel}</div>
-        <div className="game-progress">{currentWordIndex + 1} / {levelWords.length}</div>
-      </div>
-
-      <div className="phase-indicator">
-        {[1, 2, 3].map(phase => (
-          <div key={phase} className={`phase-dot ${phase === 1 ? 'active' : ''}`} />
-        ))}
-      </div>
-
-      {/* Progress dots */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
-        {levelWords.map((_, idx) => (
-          <div
-            key={idx}
-            style={{
-              width: idx === currentWordIndex ? 24 : 8,
-              height: 8,
-              borderRadius: 4,
-              background: idx < currentWordIndex ? 'var(--primary)' : idx === currentWordIndex ? 'var(--primary)' : '#E0E0E0',
-              transition: 'all 0.3s ease',
-            }}
-          />
-        ))}
       </div>
 
       <div style={{ textAlign: 'center', padding: '0 20px' }}>
@@ -102,7 +79,6 @@ export function Phase1() {
           🎧 Listen and choose
         </p>
 
-        {/* Listen Button */}
         <button
           onClick={() => speak(targetWord.char)}
           style={{
@@ -122,7 +98,6 @@ export function Phase1() {
           🔊
         </button>
 
-        {/* Feedback message */}
         {show激励 && (
           <div style={{
             fontSize: 24,
@@ -135,7 +110,6 @@ export function Phase1() {
           </div>
         )}
 
-        {/* Options */}
         <div className="options-grid">
           {options.map((word) => {
             let className = 'option-btn';
