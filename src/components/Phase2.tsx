@@ -180,9 +180,10 @@ export function Phase2() {
         display: 'flex', 
         justifyContent: 'space-between', 
         padding: '0 8px',
-        gap: 16,
+        gap: 24,
       }}>
-        <div style={{ flex: 1 }}>
+        {/* 汉字列表 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {levelWordObjects.map(word => {
             const isMatched = matches.find(m => m.wordId === word.id)?.matched;
             const isSelected = selectedWord === word.id;
@@ -193,7 +194,6 @@ export function Phase2() {
                 onClick={() => handleWordClick(word.id)}
                 style={{
                   padding: '12px 8px',
-                  marginBottom: 10,
                   borderRadius: 10,
                   background: isMatched 
                     ? '#E8F5E9' 
@@ -209,6 +209,11 @@ export function Phase2() {
                   textAlign: 'center',
                   transition: 'all 0.2s ease',
                   opacity: isMatched ? 0.6 : 1,
+                  minHeight: 55,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
                 }}
               >
                 <div style={{ fontSize: 20, fontWeight: 600 }}>{word.char}</div>
@@ -218,7 +223,8 @@ export function Phase2() {
           })}
         </div>
 
-        <div style={{ flex: 1 }}>
+        {/* 图片列表 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {shuffledImages.map(item => {
             const isMatched = matches.find(m => m.wordId === item.wordId)?.matched;
             const isSelected = selectedImage === item.wordId;
@@ -228,7 +234,6 @@ export function Phase2() {
                 key={item.wordId}
                 onClick={() => handleImageClick(item.wordId)}
                 style={{
-                  marginBottom: 10,
                   borderRadius: 10,
                   background: isMatched 
                     ? '#E8F5E9' 
@@ -244,6 +249,7 @@ export function Phase2() {
                   overflow: 'hidden',
                   transition: 'all 0.2s ease',
                   opacity: isMatched ? 0.6 : 1,
+                  minHeight: 55,
                 }}
               >
                 <img 
@@ -253,6 +259,7 @@ export function Phase2() {
                     width: '100%',
                     height: 55,
                     objectFit: 'cover',
+                    display: 'block',
                   }}
                 />
               </div>
