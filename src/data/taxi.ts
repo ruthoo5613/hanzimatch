@@ -3,7 +3,7 @@ import type { Theme } from '../types';
 export const taxiTheme: Theme = {
   id: 'taxi',
   name: '打车',
-  nameEn: 'Taxi',
+  nameEn: '打车',
   icon: '🚕',
   words: [
     { id: 'taxi_1', char: '司机', pinyin: 'sījī', english: 'driver' },
