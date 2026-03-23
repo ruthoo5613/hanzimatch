@@ -24,7 +24,7 @@ export interface Theme {
 }
 
 // 游戏阶段
-export type GamePhase = 'home' | 'phase1' | 'phase2' | 'phase3' | 'result';
+export type GamePhase = 'home' | 'phase1' | 'phase2' | 'phase3' | 'result' | 'review' | 'stats';
 
 // 游戏状态
 export interface GameState {

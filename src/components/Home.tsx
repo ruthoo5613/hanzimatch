@@ -1,8 +1,11 @@
 import { useGameStore } from '../hooks/useGame';
+import { useReviewStore } from '../hooks/useReview';
 import type { Theme } from '../types';
 
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
+  const { getStats } = useReviewStore();
+  const stats = getStats();
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) return;
@@ -17,8 +20,9 @@ export function Home() {
         <p className="home-subtitle">Learn Chinese while playing!</p>
       </div>
 
+      {/* 学习模式入口 */}
       <div className="themes-section">
-        <h2 className="themes-title">Choose a Topic</h2>
+        <h2 className="themes-title">🎮 学习模式</h2>
         <div className="themes-list">
           {themes.map((theme) => {
             const unlocked = isThemeUnlocked(theme.id);
@@ -47,6 +51,51 @@ export function Home() {
         </div>
       </div>
 
+      {/* 复习和统计入口 */}
+      <div className="themes-section" style={{ marginTop: 24 }}>
+        <h2 className="themes-title">📖 复习与统计</h2>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {/* 复习入口 */}
+          <div 
+            className="card"
+            onClick={() => setPhase('review')}
+            style={{ 
+              flex: 1, 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              background: stats.toReview > 0 ? 'linear-gradient(135deg, #FFF3E0, #FFE0B2)' : 'white',
+              border: stats.toReview > 0 ? '2px solid #FF9800' : '2px solid #E0E0E0',
+            }}
+          >
+            <div style={{ fontSize: 36, marginBottom: 8 }}>📖</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>复习</div>
+            <div style={{ fontSize: 14, color: stats.toReview > 0 ? '#FF9800' : '#757575' }}>
+              {stats.toReview > 0 ? `${stats.toReview} 词待复习` : '暂无复习'}
+            </div>
+          </div>
+
+          {/* 统计入口 */}
+          <div 
+            className="card"
+            onClick={() => setPhase('stats')}
+            style={{ 
+              flex: 1, 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              background: 'white',
+              border: '2px solid #E0E0E0',
+            }}
+          >
+            <div style={{ fontSize: 36, marginBottom: 8 }}>📊</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>统计</div>
+            <div style={{ fontSize: 14, color: '#757575' }}>
+              已掌握 {stats.mastered} 词
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 说明 */}
       <div className="themes-section" style={{ marginTop: 32 }}>
         <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
           <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>How to Play</div>

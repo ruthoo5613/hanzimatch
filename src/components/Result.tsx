@@ -1,4 +1,5 @@
 import { useGameStore } from '../hooks/useGame';
+import { useReviewStore } from '../hooks/useReview';
 
 export function Result() {
   const { 
@@ -7,6 +8,7 @@ export function Result() {
     setPhase,
     isThemeCompleted,
   } = useGameStore();
+  const { learnWord } = useReviewStore();
 
   if (!currentTheme) return null;
 
@@ -14,7 +16,20 @@ export function Result() {
   const levelWordObjects = currentTheme.words.filter(w => levelWords.includes(w.id));
   const themeComplete = isThemeCompleted(currentTheme.id);
 
+  // 学习新词时自动添加到复习系统
+  const handleLearnWords = () => {
+    levelWordObjects.forEach(word => {
+      learnWord({
+        id: word.id,
+        char: word.char,
+        pinyin: word.pinyin,
+        english: word.english,
+      });
+    });
+  };
+
   const handleNextLevel = () => {
+    handleLearnWords(); // 学习词汇并添加到复习系统
     if (currentLevel < 3) {
       useGameStore.getState().setLevel(currentLevel + 1);
       setPhase('phase1');
@@ -24,6 +39,7 @@ export function Result() {
   };
 
   const handleBackHome = () => {
+    handleLearnWords(); // 确保所有词汇都已学习
     setPhase('home');
   };
 
