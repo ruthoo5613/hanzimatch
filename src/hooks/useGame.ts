@@ -23,7 +23,7 @@ const initialState: GameState = {
   currentLevel: 1,
   phase: 'home',
   learnedWords: [],
-  unlockedThemes: ['scenic'], // 第一个主题默认解锁
+  unlockedThemes: ['scenic', 'restaurant', 'taxi'], // 全部主题已解锁
   completedLevels: [],
   currentWords: [], // 当前主题的3个词
 };
