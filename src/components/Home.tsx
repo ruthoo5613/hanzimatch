@@ -41,7 +41,6 @@ export function Home() {
                 <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
                 <div className="theme-info">
                   <div className="theme-name" style={{ fontSize: 20 }}>{theme.name}</div>
-                  <div className="theme-name-en">{theme.nameEn}</div>
                 </div>
                 {completed && <span className="theme-status">✓</span>}
                 {!unlocked && <span className="theme-status locked">🔒</span>}
