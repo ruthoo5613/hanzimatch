@@ -2,7 +2,7 @@ import type { Theme } from '../types';
 
 export const scenicTheme: Theme = {
   id: 'scenic',
-  name: '景区游玩',
+  name: '景区',
   nameEn: '景区',
   icon: '🏞️',
   words: [

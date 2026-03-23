@@ -2,7 +2,7 @@ import type { Theme } from '../types';
 
 export const restaurantTheme: Theme = {
   id: 'restaurant',
-  name: '餐厅吃饭',
+  name: '餐厅',
   nameEn: '餐厅',
   icon: '🍜',
   words: [
