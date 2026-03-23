@@ -20,10 +20,14 @@ export function Phase3() {
     
     completeLevel(currentTheme.id, currentLevel);
     
+    // 通关第3关时解锁下一个主题
     if (currentLevel === 3) {
+      // 景区通关后解锁餐厅
       if (currentTheme.id === 'scenic') {
         unlockTheme('restaurant');
-      } else if (currentTheme.id === 'restaurant') {
+      }
+      // 餐厅通关后解锁出租车
+      else if (currentTheme.id === 'restaurant') {
         unlockTheme('taxi');
       }
     }
