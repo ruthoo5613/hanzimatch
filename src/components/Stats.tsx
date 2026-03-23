@@ -1,7 +1,9 @@
 import { useReviewStore } from '../hooks/useReview';
+import { useGameStore } from '../hooks/useGame';
 
 export function Stats() {
   const { getStats, todayReviewCount, todayCorrectCount } = useReviewStore();
+  const { setPhase } = useGameStore();
   const stats = getStats();
   
   const accuracy = todayReviewCount > 0 
@@ -11,7 +13,24 @@ export function Stats() {
   const total = stats.new + stats.learning + stats.review + stats.mastered;
 
   return (
-    <div className="stats-page" style={{ padding: 20 }}>
+    <div className="stats-page" style={{ padding: 20, position: 'relative' }}>
+      {/* Back button */}
+      <button
+        onClick={() => setPhase('home')}
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          background: 'none',
+          border: 'none',
+          fontSize: 24,
+          cursor: 'pointer',
+          padding: 8,
+        }}
+      >
+        ←
+      </button>
+
       <h2 style={{ marginBottom: 24, textAlign: 'center' }}>📊 学习统计</h2>
       
       {/* 总览卡片 */}
@@ -121,7 +140,7 @@ export function Stats() {
           <button 
             className="btn btn-primary"
             style={{ marginTop: 12 }}
-            onClick={() => window.location.reload()}
+            onClick={() => setPhase('review')}
           >
             开始复习
           </button>

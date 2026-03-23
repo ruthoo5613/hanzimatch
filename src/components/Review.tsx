@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useReviewStore } from '../hooks/useReview';
+import { useGameStore } from '../hooks/useGame';
 
 export function Review() {
   const { getWordsToReview, answerWord } = useReviewStore();
+  const { setPhase } = useGameStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
@@ -15,9 +17,29 @@ export function Review() {
     useReviewStore.getState().resetDailyCount();
   }, []);
 
+  // Back button
+  const BackButton = () => (
+    <button
+      onClick={() => setPhase('home')}
+      style={{
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        background: 'none',
+        border: 'none',
+        fontSize: 24,
+        cursor: 'pointer',
+        padding: 8,
+      }}
+    >
+      ←
+    </button>
+  );
+
   if (words.length === 0) {
     return (
-      <div className="review-empty" style={{ padding: 40, textAlign: 'center' }}>
+      <div className="review-empty" style={{ padding: 40, textAlign: 'center', position: 'relative' }}>
+        <BackButton />
         <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
         <h2 style={{ marginBottom: 12 }}>All Done!</h2>
         <p style={{ color: '#757575' }}>No words to review right now.</p>
@@ -30,7 +52,8 @@ export function Review() {
     const total = results.correct + results.wrong;
     const accuracy = total > 0 ? Math.round((results.correct / total) * 100) : 0;
     return (
-      <div className="review-complete" style={{ padding: 40, textAlign: 'center' }}>
+      <div className="review-complete" style={{ padding: 40, textAlign: 'center', position: 'relative' }}>
+        <BackButton />
         <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
         <h2 style={{ marginBottom: 24 }}>Review Complete!</h2>
         
@@ -62,7 +85,7 @@ export function Review() {
 
         <button 
           className="btn btn-primary"
-          onClick={() => window.location.reload()}
+          onClick={() => setPhase('home')}
           style={{ padding: '14px 32px' }}
         >
           Back to Home
@@ -89,7 +112,9 @@ export function Review() {
   };
 
   return (
-    <div className="review-page" style={{ padding: 20 }}>
+    <div className="review-page" style={{ padding: 20, position: 'relative' }}>
+      <BackButton />
+      
       {/* Progress */}
       <div style={{ 
         display: 'flex', 
