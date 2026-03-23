@@ -135,8 +135,13 @@ export const useReviewStore = create<ReviewStore>()(
         const now = Date.now();
         
         return Object.values(state.wordMasteries)
-          .filter(m => m.level !== 'mastered' && m.nextReview <= now)
-          .sort((a, b) => a.nextReview - b.nextReview);
+          .filter(m => m.level !== 'mastered' && (m.nextReview <= now || m.level === 'new'))
+          .sort((a, b) => {
+            // new words first, then by next review time
+            if (a.level === 'new' && b.level !== 'new') return -1;
+            if (a.level !== 'new' && b.level === 'new') return 1;
+            return a.nextReview - b.nextReview;
+          });
       },
 
       getStats: () => {

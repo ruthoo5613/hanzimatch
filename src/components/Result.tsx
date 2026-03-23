@@ -28,18 +28,33 @@ export function Result() {
     });
   };
 
+  // 主题完成时学习所有词
+  const handleThemeComplete = () => {
+    if (currentTheme) {
+      currentTheme.words.forEach(word => {
+        learnWord({
+          id: word.id,
+          char: word.char,
+          pinyin: word.pinyin,
+          english: word.english,
+        });
+      });
+    }
+  };
+
   const handleNextLevel = () => {
     handleLearnWords(); // 学习词汇并添加到复习系统
     if (currentLevel < 3) {
       useGameStore.getState().setLevel(currentLevel + 1);
       setPhase('phase1');
     } else {
+      handleThemeComplete(); // 主题完成时学习所有词
       setPhase('home');
     }
   };
 
   const handleBackHome = () => {
-    handleLearnWords(); // 确保所有词汇都已学习
+    handleThemeComplete(); // 确保所有词汇都已学习
     setPhase('home');
   };
 
