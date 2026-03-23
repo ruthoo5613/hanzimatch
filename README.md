@@ -1,4 +1,14 @@
-# React + TypeScript + Vite
+# HanziMatch
+
+汉字匹配学习游戏 - 汉语学习工具
+
+[![Deploy to Cloudflare Pages](https://github.com/ruthoo5613/hanzimatch/actions/workflows/deploy.yml/badge.svg)](https://github.com/ruthoo5613/hanzimatch/actions/workflows/deploy.yml)
+
+## 技术栈
+
+React + TypeScript + Vite + Zustand + Web Speech API
+
+---
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
