@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameState, GamePhase, Theme, Word } from '../types';
+import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
 import { scenicTheme, restaurantTheme, taxiTheme } from '../data';
+import { restaurantThemeV2 } from '../data/restaurantV2';
 
 interface GameStore extends GameState {
   themes: Theme[];
-  currentWords: Word[];  // 当前主题的3个词
+  currentWords: Word[];       // 当前主题的词汇
+  currentSentences: Sentence[]; // 当前主题的句子
   setTheme: (theme: Theme) => void;
   setLevel: (level: number) => void;
   setPhase: (phase: GamePhase) => void;
@@ -23,22 +25,41 @@ const initialState: GameState = {
   currentLevel: 1,
   phase: 'home',
   learnedWords: [],
-  unlockedThemes: ['scenic', 'restaurant', 'taxi'], // 全部主题已解锁
+  unlockedThemes: ['scenic', 'restaurant', 'taxi', 'restaurant_v2'], 
   completedLevels: [],
-  currentWords: [], // 当前主题的3个词
+  currentWords: [],
+  currentSentences: [],
 };
 
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-      themes: [scenicTheme, restaurantTheme, taxiTheme],
+      // 旧版主题 + 新版v2主题
+      themes: [scenicTheme, restaurantTheme, taxiTheme, restaurantThemeV2],
 
       setTheme: (theme: Theme) => {
-        // 每次选择主题时随机3个词
-        const shuffled = [...theme.words].sort(() => Math.random() - 0.5);
-        const randomWords = shuffled.slice(0, 3);
-        set({ currentTheme: theme, currentLevel: 1, currentWords: randomWords });
+        // 获取第1关的词汇
+        const level1 = theme.levels.find(l => l.id === 1);
+        const words = level1?.words || [];
+        
+        // 获取第2关的句子
+        const level2 = theme.levels.find(l => l.id === 2);
+        const sentences = level2?.sentences || [];
+        
+        set({ 
+          currentTheme: theme, 
+          currentLevel: 1, 
+          currentWords: words,
+          currentSentences: sentences,
+        });
+        
+        // 根据关卡类型进入对应阶段
+        if (level1?.type === 'words') {
+          set({ phase: 'level1' });
+        } else {
+          set({ phase: 'phase1' });
+        }
       },
       
       setLevel: (level: number) => set({ currentLevel: level }),
@@ -72,11 +93,11 @@ export const useGameStore = create<GameStore>()(
       
       isThemeUnlocked: (themeId: string) => {
         const state = get();
-        // 景区默认解锁
+        // v2主题默认解锁测试
+        if (themeId === 'restaurant_v2') return true;
+        // 旧版主题逻辑
         if (themeId === 'scenic') return true;
-        // 检查是否已解锁
         if (state.unlockedThemes.includes(themeId)) return true;
-        // 检查前置主题是否通关
         if (themeId === 'restaurant') {
           return state.completedLevels.some(c => c.themeId === 'scenic' && c.levelId === 3);
         }

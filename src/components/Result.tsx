@@ -12,8 +12,10 @@ export function Result() {
 
   if (!currentTheme) return null;
 
-  const levelWords = currentTheme.levels[currentLevel - 1].wordIds;
-  const levelWordObjects = currentTheme.words.filter(w => levelWords.includes(w.id));
+  // 支持新版和旧版主题
+  const level = currentTheme.levels[currentLevel - 1];
+  const levelWords = level?.words || [];
+  const levelWordObjects = levelWords.length > 0 ? levelWords : currentTheme.words.slice(0, 3);
   const themeComplete = isThemeCompleted(currentTheme.id);
 
   // 学习新词时自动添加到复习系统
