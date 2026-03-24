@@ -39,9 +39,16 @@ export const useGameStore = create<GameStore>()(
       themes: [scenicTheme, restaurantTheme, taxiTheme, restaurantThemeV2],
 
       setTheme: (theme: Theme) => {
-        // 获取第1关的词汇
+        // 获取第1关的词汇（兼容新旧两种数据结构）
         const level1 = theme.levels.find(l => l.id === 1);
-        const words = level1?.words || [];
+        // 新版：level1.words[]，旧版：level1.wordIds[] 需要从 theme.words 映射
+        let words = level1?.words || [];
+        if (words.length === 0 && level1 && Array.isArray(level1.wordIds) && level1.wordIds.length > 0) {
+          // 旧主题：用 wordIds 从 theme.words 中获取实际词汇
+          words = level1.wordIds
+            .map(id => theme.words?.find(w => w.id === id))
+            .filter((w): w is Word => w !== undefined);
+        }
         
         // 获取第2关的句子
         const level2 = theme.levels.find(l => l.id === 2);
@@ -54,10 +61,12 @@ export const useGameStore = create<GameStore>()(
           currentSentences: sentences,
         });
         
-        // 根据关卡类型进入对应阶段
-        if (level1?.type === 'words') {
+        // 只有 restaurant_v2 使用新版 level1 界面（左侧词汇列表）
+        // 其他主题（版本1的景区、出租车、餐厅）保持原来的 phase1 界面
+        if (theme.id === 'restaurant_v2' && level1?.type === 'words') {
           set({ phase: 'level1' });
         } else {
+          // 旧主题默认进入 phase1
           set({ phase: 'phase1' });
         }
       },
@@ -117,6 +126,12 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: 'chinese-match-storage',
+      // 只保存学习进度，不保存页面状态（每次进入都从首页开始）
+      partialize: (state) => ({
+        learnedWords: state.learnedWords,
+        unlockedThemes: state.unlockedThemes,
+        completedLevels: state.completedLevels,
+      }),
     }
   )
 );
