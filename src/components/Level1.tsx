@@ -35,7 +35,7 @@ function getPinyinArray(word: Word): string[] {
 }
 
 export function Level1() {
-  const { currentWords, setPhase } = useGameStore();
+  const { currentWords, setPhase, completeLevel, currentTheme } = useGameStore();
   const { speak } = useSpeech();
   const { isSupported: recorderSupported, isRecording, startRecording, stopRecording } = useAudioRecorder();
   
@@ -46,6 +46,8 @@ export function Level1() {
   const [recognizedText, setRecognizedText] = useState('');
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [serverAvailable, setServerAvailable] = useState<boolean | null>(null);
+  // 跟踪每个词的学习状态和分数
+  const [wordScores, setWordScores] = useState<Record<string, number>>({});
 
   // 检查 ASR 服务器是否可用
   useEffect(() => {
@@ -122,6 +124,12 @@ export function Level1() {
       const scoreResult = calculateSimilarity(recognized, targetText);
       setScore(scoreResult);
       setShowResult(true);
+      
+      // 记录该词的学习分数
+      setWordScores(prev => ({
+        ...prev,
+        [currentWord.id]: scoreResult
+      }));
     } catch (err: any) {
       console.error('ASR error:', err);
       setIsRecognizing(false);
@@ -208,6 +216,9 @@ export function Level1() {
         
         {currentWords.map((word, index) => {
           const pinyinArr = getPinyinArray(word);
+          const wordScore = wordScores[word.id];
+          const isLearned = wordScore !== undefined;
+          
           return (
             <div
               key={word.id}
@@ -221,12 +232,13 @@ export function Level1() {
                 padding: '12px 16px',
                 borderBottom: '1px solid #E0E0E0',
                 cursor: 'pointer',
-                background: index === currentIndex ? '#fff' : 'transparent',
+                background: index === currentIndex ? '#fff' : isLearned ? '#E8F5E9' : 'transparent',
                 borderLeft: index === currentIndex ? '3px solid #4CAF50' : '3px solid transparent',
               }}
             >
-              <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>
-                {word.char}
+              <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{word.char}</span>
+                {isLearned && <span style={{ fontSize: 14, color: '#4CAF50' }}>{wordScore}分</span>}
               </div>
               <div style={{ fontSize: 12, color: '#757575' }}>
                 {pinyinArr.join(' ')}
@@ -244,6 +256,9 @@ export function Level1() {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 14, color: '#757575' }}>
               {currentIndex + 1} / {currentWords.length}
+            </div>
+            <div style={{ fontSize: 12, color: '#4CAF50' }}>
+              已学习: {Object.keys(wordScores).length} / {currentWords.length}
             </div>
           </div>
           <div style={{ width: 40 }}></div>
@@ -380,6 +395,35 @@ export function Level1() {
               <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
                 目标: "{currentWord.char}"
               </div>
+            </div>
+          )}
+
+          {/* 下一关按钮 */}
+          {Object.keys(wordScores).length === currentWords.length && (
+            <div style={{ marginTop: 24, textAlign: 'center' }}>
+              <div style={{ fontSize: 16, color: '#4CAF50', marginBottom: 12 }}>
+                🎉 恭喜完成本关所有词汇！
+              </div>
+              <button
+                onClick={() => {
+                  if (currentTheme) {
+                    completeLevel(currentTheme.id, 1);
+                  }
+                  setPhase('home');
+                }}
+                style={{
+                  padding: '16px 32px',
+                  fontSize: 16,
+                  background: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 12,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                返回首页 🏠
+              </button>
             </div>
           )}
         </div>
