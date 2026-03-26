@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGame';
-import { useSpeech, useSpeechRecognition } from '../hooks/useSpeech';
+import { useSpeech } from '../hooks/useSpeech';
+import { useAudioRecorder } from '../hooks/useAudioRecorder';
+import { callTencentASR, checkASRServer } from '../hooks/useTencentASR';
 import type { Word } from '../types';
 
 const wordImages: Record<string, string> = {
@@ -35,13 +37,20 @@ function getPinyinArray(word: Word): string[] {
 export function Level1() {
   const { currentWords, setPhase } = useGameStore();
   const { speak } = useSpeech();
-  const { isSupported: speechRecoSupported, startRecognition, calculateScore, isRecognizing } = useSpeechRecognition();
+  const { isSupported: recorderSupported, isRecording, startRecording, stopRecording } = useAudioRecorder();
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [recognizedText, setRecognizedText] = useState('');
+  const [isRecognizing, setIsRecognizing] = useState(false);
+  const [serverAvailable, setServerAvailable] = useState<boolean | null>(null);
+
+  // 检查 ASR 服务器是否可用
+  useEffect(() => {
+    checkASRServer().then(setServerAvailable);
+  }, []);
 
   useEffect(() => {
     setImageError(false);
@@ -69,32 +78,110 @@ export function Level1() {
   };
 
   const handleRecord = async () => {
-    if (!speechRecoSupported) {
-      alert('您的浏览器不支持语音识别，请使用 Chrome 浏览器');
+    if (!recorderSupported) {
+      alert('您的浏览器不支持录音，请使用 Chrome 浏览器');
       return;
     }
 
-    if (isRecognizing) {
-      // 停止识别（实际上由用户说话结束触发）
+    if (isRecording) {
       return;
     }
 
     try {
-      // 开始语音识别
-      const text = await startRecognition();
-      setRecognizedText(text);
-      
+      // 开始录音
+      await startRecording();
+      setIsRecognizing(true);
+    } catch (err) {
+      console.error('Failed to start recording:', err);
+      alert('无法访问麦克风，请检查权限设置');
+    }
+  };
+
+  const handleStopRecording = async () => {
+    if (!isRecording) return;
+
+    try {
+      const audioBase64 = await stopRecording();
+      setIsRecognizing(false);
+
+      if (!audioBase64) {
+        alert('录音失败，请重试');
+        return;
+      }
+
+      // 发送到腾讯云 ASR 服务
+      setIsRecognizing(true);
+      const result = await callTencentASR(audioBase64);
+      setIsRecognizing(false);
+
+      const recognized = result.text;
+      setRecognizedText(recognized);
+
       // 计算分数
       const targetText = currentWord.char;
-      const scoreResult = calculateScore(text, targetText);
+      const scoreResult = calculateSimilarity(recognized, targetText);
       setScore(scoreResult);
       setShowResult(true);
     } catch (err: any) {
-      console.error('Recognition error:', err);
-      // 识别失败时给一个默认分数
+      console.error('ASR error:', err);
+      setIsRecognizing(false);
+      // ASR 失败时降级到浏览器语音识别
+      fallbackToBrowserASR();
+    }
+  };
+
+  // 简单的相似度计算
+  const calculateSimilarity = (recognized: string, target: string): number => {
+    if (!recognized || !target) return 50;
+    
+    const r = recognized.toLowerCase().replace(/\s/g, '');
+    const t = target.toLowerCase().replace(/\s/g, '');
+    
+    // 完全匹配
+    if (r === t) return 95;
+    
+    // 包含关系
+    if (r.includes(t) || t.includes(r)) return 85;
+    
+    // 逐字匹配
+    let matches = 0;
+    for (const char of t) {
+      if (r.includes(char)) matches++;
+    }
+    
+    const ratio = matches / Math.max(r.length, t.length);
+    return Math.min(90, Math.max(50, Math.round(ratio * 100)));
+  };
+
+  // 降级到浏览器语音识别
+  const fallbackToBrowserASR = async () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('您的浏览器不支持语音识别');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'zh-CN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsRecognizing(true);
+    recognition.onresult = (event: any) => {
+      const text = event.results[0][0].transcript;
+      setRecognizedText(text);
+      const scoreResult = calculateSimilarity(text, currentWord.char);
+      setScore(scoreResult);
+      setShowResult(true);
+    };
+    recognition.onerror = () => {
+      setIsRecognizing(false);
       setScore(60);
       setShowResult(true);
-    }
+    };
+    recognition.onend = () => setIsRecognizing(false);
+
+    recognition.start();
   };
 
   const handleBack = () => {
@@ -239,12 +326,12 @@ export function Level1() {
             </button>
 
             <button
-              onClick={handleRecord}
+              onClick={isRecording ? handleStopRecording : handleRecord}
               disabled={isRecognizing}
               style={{
                 padding: '12px 16px',
                 fontSize: 14,
-                background: isRecognizing ? '#F44336' : '#2196F3',
+                background: isRecording ? '#F44336' : '#2196F3',
                 color: 'white',
                 border: 'none',
                 borderRadius: 10,
@@ -255,8 +342,8 @@ export function Level1() {
                 gap: 4,
               }}
             >
-              <span style={{ fontSize: 20 }}>{isRecognizing ? '🔴' : '🎤'}</span>
-              <span>{isRecognizing ? '请说话...' : '跟读'}</span>
+              <span style={{ fontSize: 20 }}>{isRecording ? '⏹️' : isRecognizing ? '🔴' : '🎤'}</span>
+              <span>{isRecording ? '停止并识别' : isRecognizing ? '请说话...' : '跟读'}</span>
             </button>
           </div>
 
@@ -266,6 +353,13 @@ export function Level1() {
               <div style={{ fontSize: 14, color: '#E65100' }}>
                 🎤 正在识别... 请朗读" {currentWord.char} "
               </div>
+            </div>
+          )}
+
+          {/* Server Status */}
+          {serverAvailable === false && (
+            <div style={{ marginTop: 12, padding: 8, borderRadius: 8, background: '#FFF3E0', fontSize: 12, color: '#E65100' }}>
+              ⚠️ 腾讯云ASR服务未启动（本地开发模式）
             </div>
           )}
 
