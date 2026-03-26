@@ -1,13 +1,22 @@
-/** 腾讯云 ASR 客户端 - 已完成
- * 连接到本地后端服务 http://localhost:3001
+/**
+ * 腾讯云 ASR 客户端
+ * 
+ * 开发环境: http://localhost:3001/asr
+ * 生产环境: https://hanzimatch-asr.ruthoo5613.workers.dev/asr
  * 
  * 使用方式：
- * 1. 启动后端：cd server && node server.js
- * 2. 设置环境变量 TENCENTCLOUD_SECRET_ID 和 TENCENTCLOUD_SECRET_KEY
- * 3. 需要修改 Level1 使用 MediaRecorder 录音发送到此服务
+ * 1. 开发：启动 local server (node server/server.js)
+ * 2. 生产：部署 Workers 并设置环境变量
  */
 
-const ASR_SERVER_URL = 'http://localhost:3001/asr';
+const ASR_DEV_URL = 'http://localhost:3001/asr';
+// TODO: 部署 Workers 后替换为实际 URL
+const ASR_PROD_URL = 'https://your-worker.workers.dev/asr';
+
+// 判断是否在生产环境
+const ASR_SERVER_URL = typeof window !== 'undefined' && window.location.hostname.includes('pages.dev')
+  ? ASR_PROD_URL 
+  : ASR_DEV_URL;
 
 export interface ASRResult {
   text: string;
@@ -46,7 +55,6 @@ export function audioBlobToBase64(blob: Blob): Promise<string> {
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
-      // 直接返回 base64 数据（去除 data:audio/webm;base64, 前缀）
       const base64 = result.includes(',') ? result.split(',')[1] : result;
       resolve(base64);
     };
