@@ -11,7 +11,7 @@
 
 const ASR_DEV_URL = 'http://localhost:3001/asr';
 // TODO: 部署 Workers 后替换为实际 URL
-const ASR_PROD_URL = 'https://your-worker.workers.dev/asr';
+const ASR_PROD_URL = 'https://hanzimatch-asr-prod.ruthoo5613.workers.dev/asr';
 
 // 判断是否在生产环境
 const ASR_SERVER_URL = typeof window !== 'undefined' && window.location.hostname.includes('pages.dev')
