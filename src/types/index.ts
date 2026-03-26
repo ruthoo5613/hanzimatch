@@ -2,7 +2,7 @@
 export interface Word {
   id: string;
   char: string;        // 汉字
-  pinyin: string;      // 拼音
+  pinyin: string | string[];      // 拼音：可以是字符串或字符串数组（每个字对应一个拼音）
   english: string;     // 英文翻译
 }
 

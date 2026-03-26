@@ -21,10 +21,11 @@ export function Result() {
   // 学习新词时自动添加到复习系统
   const handleLearnWords = () => {
     levelWordObjects.forEach(word => {
+      const pinyinStr = Array.isArray(word.pinyin) ? word.pinyin.join(' ') : word.pinyin;
       learnWord({
         id: word.id,
         char: word.char,
-        pinyin: word.pinyin,
+        pinyin: pinyinStr,
         english: word.english,
       });
     });
@@ -34,10 +35,11 @@ export function Result() {
   const handleThemeComplete = () => {
     if (currentTheme) {
       currentTheme.words.forEach(word => {
+        const pinyinStr = Array.isArray(word.pinyin) ? word.pinyin.join(' ') : word.pinyin;
         learnWord({
           id: word.id,
           char: word.char,
-          pinyin: word.pinyin,
+          pinyin: pinyinStr,
           english: word.english,
         });
       });
