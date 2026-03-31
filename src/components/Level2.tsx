@@ -201,10 +201,24 @@ export function Level2() {
 
         {/* Follow Read Section */}
         <div style={{ marginBottom: 16 }}>
-          {!isRecording ? (
+          {isEvaluating ? (
+            <button
+              disabled={true}
+              style={{
+                padding: '16px 32px',
+                fontSize: 18,
+                background: '#BDBDBD',
+                color: 'white',
+                border: 'none',
+                borderRadius: 12,
+                cursor: 'not-allowed',
+              }}
+            >
+              ⏳ 处理中...
+            </button>
+          ) : !isRecording ? (
             <button
               onClick={handleStartRecord}
-              disabled={isEvaluating}
               style={{
                 padding: '16px 32px',
                 fontSize: 18,
@@ -238,7 +252,6 @@ export function Level2() {
               </div>
               <button
                 onClick={handleStopRecord}
-                disabled={isEvaluating}
                 style={{
                   padding: '12px 32px',
                   fontSize: 16,
@@ -251,12 +264,6 @@ export function Level2() {
               >
                 ⏹ 停止录音
               </button>
-            </div>
-          )}
-          
-          {isEvaluating && (
-            <div style={{ marginTop: 16, color: '#757575', fontSize: 14 }}>
-              评分中...
             </div>
           )}
         </div>
