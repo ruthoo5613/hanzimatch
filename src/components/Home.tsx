@@ -99,8 +99,8 @@ export function Home() {
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Chinese Language Learning</h1>
-        <p className="home-subtitle">Master Chinese through immersive games!</p>
+        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Easy Chinese</h1>
+        <p className="home-subtitle">Learn Chinese the easy way!</p>
       </div>
 
       {/* 学习模式入口 */}
