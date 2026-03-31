@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
 import { useRecorder } from '../hooks/useRecorder';
+import { useSubscriptionStore } from '../hooks/useSubscription';
 import { callTencentASR, audioBlobToBase64 } from '../hooks/useTencentASR';
 
 export function Level2() {
   const { currentSentences, currentTheme, setPhase, setLevel } = useGameStore();
+  const { canUseRecording } = useSubscriptionStore();
   
   // 确保关卡数正确
   useEffect(() => {
@@ -221,7 +223,13 @@ export function Level2() {
             </button>
           ) : !isRecording ? (
             <button
-              onClick={handleStartRecord}
+              onClick={() => {
+                if (!canUseRecording) {
+                  useGameStore.getState().setPhase('pricing');
+                  return;
+                }
+                handleStartRecord();
+              }}
               style={{
                 padding: '16px 32px',
                 fontSize: 18,

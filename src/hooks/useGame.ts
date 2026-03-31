@@ -24,7 +24,8 @@ const initialState: GameState = {
   currentLevel: 1,
   phase: 'home',
   learnedWords: [],
-  unlockedThemes: ['restaurant_v2', 'hotel', 'driving'], 
+  // 只开放第一个主题给所有用户
+  unlockedThemes: ['restaurant_v2'], 
   completedLevels: [],
   currentWords: [],
   currentSentences: [],

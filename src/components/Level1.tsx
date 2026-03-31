@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
+import { useSubscriptionStore } from '../hooks/useSubscription';
 import type { Word } from '../types';
 
 const wordImages: Record<string, string> = {
@@ -58,6 +59,7 @@ function calculateSimilarity(recognized: string, target: string): number {
 export function Level1() {
   const { currentWords, setPhase, completeLevel, setLevel, currentTheme } = useGameStore();
   const { speak } = useSpeech();
+  const { canUseRecording } = useSubscriptionStore();
   
   // 确保关卡数正确
   useEffect(() => {
@@ -402,6 +404,11 @@ export function Level1() {
 
             <button
               onClick={() => {
+                // 检查订阅权限
+                if (!canUseRecording) {
+                  useGameStore.getState().setPhase('pricing');
+                  return;
+                }
                 if (isProcessing) return;
                 if (isRecording) {
                   handleStopRecording();

@@ -1,13 +1,19 @@
 import { useGameStore } from '../hooks/useGame';
 import { useAuthStore } from '../hooks/useAuth';
+import { useSubscriptionStore } from '../hooks/useSubscription';
 import type { Theme } from '../types';
 
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
+  const { isSubscribed, canAccessAllThemes } = useSubscriptionStore();
 
   const handleSelectTheme = (theme: Theme) => {
-    if (!isThemeUnlocked(theme.id)) return;
+    if (!isThemeUnlocked(theme.id)) {
+      // 未解锁，提示升级
+      setPhase('pricing');
+      return;
+    }
     setTheme(theme);
   };
 
@@ -27,6 +33,22 @@ export function Home() {
     }
   };
 
+  const handleAvatarClick = () => {
+    setPhase('profile');
+  };
+
+  const handleUpgrade = () => {
+    setPhase('pricing');
+  };
+
+  // 检查主题是否解锁
+  const checkThemeLocked = (themeId: string) => {
+    // 免费用户只有 restaurant_v2 解锁
+    if (themeId === 'restaurant_v2') return false;
+    if (canAccessAllThemes) return false;
+    return true;
+  };
+
   return (
     <div className="home-page">
       {/* 登录状态 */}
@@ -42,21 +64,38 @@ export function Home() {
           <span style={{ fontSize: 14, color: '#757575' }}>加载中...</span>
         ) : isAuthenticated && user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {user.photoURL && (
-              <img 
-                src={user.photoURL} 
-                alt={user.displayName || 'User'}
-                style={{ 
+            <div 
+              onClick={handleAvatarClick}
+              style={{ cursor: 'pointer' }}
+              title="个人中心"
+            >
+              {user.photoURL ? (
+                <img 
+                  src={user.photoURL} 
+                  alt={user.displayName || 'User'}
+                  style={{ 
+                    width: 32, 
+                    height: 32, 
+                    borderRadius: '50%',
+                    objectFit: 'cover'
+                  }}
+                />
+              ) : (
+                <div style={{ 
                   width: 32, 
                   height: 32, 
-                  borderRadius: '50%',
-                  objectFit: 'cover'
-                }}
-              />
-            )}
-            <span style={{ fontSize: 14, color: '#333' }}>
-              {user.displayName || user.email}
-            </span>
+                  borderRadius: '50%', 
+                  background: '#4CAF50',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: 14,
+                }}>
+                  {user.displayName?.[0] || 'U'}
+                </div>
+              )}
+            </div>
             <button 
               onClick={handleLogout}
               style={{
@@ -98,6 +137,28 @@ export function Home() {
         )}
       </div>
 
+      {/* 免费用户升级提示 */}
+      {!isSubscribed() && (
+        <div 
+          onClick={handleUpgrade}
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            background: 'linear-gradient(135deg, #FF9800, #FFB74D)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: 20,
+            fontSize: 13,
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(255, 152, 0, 0.4)',
+            fontWeight: 500,
+          }}
+        >
+          ⭐ 升级到付费版
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Easy Chinese</h1>
         <p className="home-subtitle">Learn Chinese the easy way!</p>
@@ -126,34 +187,36 @@ export function Home() {
         <div className="themes-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* 正常主题：一行两个 */}
           {themes.filter(t => t.id !== 'coming_soon').map((theme) => {
-            const unlocked = isThemeUnlocked(theme.id);
             const completed = isThemeCompleted(theme.id);
+            const isLocked = checkThemeLocked(theme.id);
 
             return (
               <div
                 key={theme.id}
-                className={`theme-card ${!unlocked ? 'locked' : ''}`}
                 onClick={() => handleSelectTheme(theme)}
                 style={{
                   padding: 20,
-                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'white',
-                  cursor: unlocked ? 'pointer' : 'not-allowed',
+                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : (isLocked ? '#f5f5f5' : 'white'),
+                  cursor: 'pointer',
                   minHeight: 80,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  borderRadius: 16,
+                  boxShadow: isLocked ? 'none' : '0 2px 8px rgba(0,0,0,0.08)',
+                  opacity: isLocked ? 0.6 : 1,
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span className="theme-icon" style={{ fontSize: 40 }}>{theme.icon}</span>
-                  <div className="theme-info">
-                    <div className="theme-name" style={{ fontSize: 18 }}>{theme.name}</div>
+                  <span style={{ fontSize: 40 }}>{theme.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 18, fontWeight: 600 }}>{theme.name}</div>
                     {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
                   </div>
                 </div>
                 <div>
-                  {completed && <span className="theme-status">✓</span>}
-                  {!unlocked && <span className="theme-status locked">🔒</span>}
+                  {completed && <span>✓</span>}
+                  {isLocked && <span style={{ color: '#FF9800' }}>🔒</span>}
                 </div>
               </div>
             );
@@ -187,7 +250,6 @@ export function Home() {
           </div>
         )}
       </div>
-
 
       {/* 产品说明 */}
       <div className="themes-section" style={{ marginTop: 32 }}>

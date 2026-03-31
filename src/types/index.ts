@@ -48,7 +48,8 @@ export type GamePhase =
   | 'home' 
   | 'phase1' | 'phase2' | 'phase3'  // 旧版3关
   | 'level1' | 'level2' | 'level3' // 新版3关
-  | 'result' | 'review' | 'stats' | 'guestbook';
+  | 'result' | 'review' | 'stats' | 'guestbook'
+  | 'pricing' | 'profile' | 'faq';
 
 // 游戏状态
 export interface GameState {

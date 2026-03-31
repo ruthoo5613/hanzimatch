@@ -11,6 +11,9 @@ import { Stats } from './components/Stats';
 import { Level1 } from './components/Level1';
 import { Level2 } from './components/Level2';
 import { Level3 } from './components/Level3';
+import { Pricing } from './components/Pricing';
+import { FAQ } from './components/FAQ';
+import { Profile } from './components/Profile';
 
 function App() {
   const { phase } = useGameStore();
@@ -96,6 +99,12 @@ function App() {
         return <Review />;
       case 'stats':
         return <Stats />;
+      case 'pricing':
+        return <Pricing />;
+      case 'profile':
+        return <Profile />;
+      case 'faq':
+        return <FAQ />;
       default:
         return <Home />;
     }
