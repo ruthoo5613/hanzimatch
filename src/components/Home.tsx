@@ -99,7 +99,7 @@ export function Home() {
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Chinese Language Learning 🇺🇸</h1>
+        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Chinese Language Learning</h1>
         <p className="home-subtitle">Master Chinese through immersive games!</p>
       </div>
 
@@ -138,7 +138,7 @@ export function Home() {
       {/* 产品说明 */}
       <div className="themes-section" style={{ marginTop: 32 }}>
         <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>关于 HanziMatch</div>
+          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>About This App</div>
           <p style={{ marginBottom: 12 }}>🎯 <strong>可理解输入</strong> - 在真实场景中学习，理解比记忆更重要 / Comprehensible input in real contexts</p>
           <p style={{ marginBottom: 12 }}>🏠 <strong>场景化学习</strong> - 餐厅、酒店、开车...覆盖日常生活场景 / Scenario-based learning for daily life</p>
           <p style={{ marginBottom: 12 }}>📚 <strong>高频词汇</strong> - 精选日常生活最高频词汇 / High-frequency words for everyday use</p>
