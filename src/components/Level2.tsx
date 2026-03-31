@@ -5,7 +5,7 @@ import { useRecorder } from '../hooks/useRecorder';
 import { callTencentASR, audioBlobToBase64 } from '../hooks/useTencentASR';
 
 export function Level2() {
-  const { currentSentences, setPhase, setLevel } = useGameStore();
+  const { currentSentences, currentTheme, setPhase, setLevel } = useGameStore();
   
   // 确保关卡数正确
   useEffect(() => {
@@ -97,7 +97,10 @@ export function Level2() {
       setTimeout(() => speak(currentSentences[currentIndex + 1].text), 500);
     } else {
       // 完成第2关，进入第3关
-      setLevel(2);
+      if (currentTheme) {
+        useGameStore.getState().completeLevel(currentTheme.id, 2);
+      }
+      setLevel(3);
       setPhase('level3');
     }
   };

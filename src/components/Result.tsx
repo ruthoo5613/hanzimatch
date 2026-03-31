@@ -7,26 +7,52 @@ export function Result() {
     currentLevel, 
     setPhase,
     isThemeCompleted,
+    currentWords,
+    currentSentences,
   } = useGameStore();
   const { learnWord } = useReviewStore();
 
   if (!currentTheme) return null;
 
-  // 支持新版和旧版主题
-  const level = currentTheme.levels[currentLevel - 1];
-  const levelWords = level?.words || [];
-  const levelWordObjects = levelWords.length > 0 ? levelWords : currentTheme.words.slice(0, 3);
   const themeComplete = isThemeCompleted(currentTheme.id);
+  
+  // 根据关卡类型获取实际学习的词汇/句子
+  const getLearnedItems = () => {
+    if (!currentTheme) return [];
+    
+    if (currentLevel === 1) {
+      // 第1关：词汇学习
+      return currentWords.length > 0 ? currentWords : [];
+    } else if (currentLevel === 2) {
+      // 第2关：句子练习
+      return currentSentences.length > 0 ? currentSentences : [];
+    } else if (currentLevel === 3) {
+      // 第3关：视频学习 - 显示第1关的词汇
+      const level1 = currentTheme.levels.find(l => l.id === 1);
+      return level1?.words || [];
+    }
+    return [];
+  };
+  
+  const learnedItems = getLearnedItems();
+  
+  // 获取关卡名称
+  const getLevelName = () => {
+    if (currentLevel === 1) return '词汇学习';
+    if (currentLevel === 2) return '句型练习';
+    if (currentLevel === 3) return '情景化学习';
+    return `第${currentLevel}关`;
+  };
 
   // 学习新词时自动添加到复习系统
   const handleLearnWords = () => {
-    levelWordObjects.forEach(word => {
-      const pinyinStr = Array.isArray(word.pinyin) ? word.pinyin.join(' ') : word.pinyin;
+    learnedItems.forEach((item: any) => {
+      const pinyinStr = Array.isArray(item.pinyin) ? item.pinyin.join(' ') : (typeof item.pinyin === 'string' ? item.pinyin : '');
       learnWord({
-        id: word.id,
-        char: word.char,
+        id: item.id,
+        char: item.char || item.text || '',
         pinyin: pinyinStr,
-        english: word.english,
+        english: item.english,
       });
     });
   };
@@ -35,7 +61,7 @@ export function Result() {
   const handleThemeComplete = () => {
     if (currentTheme) {
       currentTheme.words.forEach(word => {
-        const pinyinStr = Array.isArray(word.pinyin) ? word.pinyin.join(' ') : word.pinyin;
+        const pinyinStr = Array.isArray(word.pinyin) ? word.pinyin.join(' ') : (typeof word.pinyin === 'string' ? word.pinyin : '');
         learnWord({
           id: word.id,
           char: word.char,
@@ -47,69 +73,140 @@ export function Result() {
   };
 
   const handleNextLevel = () => {
-    handleLearnWords(); // 学习词汇并添加到复习系统
+    handleLearnWords();
     if (currentLevel < 3) {
       useGameStore.getState().setLevel(currentLevel + 1);
-      setPhase('phase1');
+      if (currentLevel === 1) {
+        setPhase('level2');
+      } else if (currentLevel === 2) {
+        setPhase('level3');
+      }
     } else {
-      handleThemeComplete(); // 主题完成时学习所有词
+      handleThemeComplete();
       setPhase('home');
     }
   };
 
   const handleBackHome = () => {
-    handleThemeComplete(); // 确保所有词汇都已学习
+    handleThemeComplete();
     setPhase('home');
   };
 
+  const handleViewStats = () => {
+    setPhase('stats');
+  };
+
   return (
-    <div className="result-page">
-      <div className="result-icon" style={{ fontSize: 100 }}>🎉</div>
-      <h1 className="result-title" style={{ fontSize: 32 }}>
-        {themeComplete ? 'Theme Complete!' : `Level ${currentLevel} Done!`}
+    <div className="result-page" style={{ padding: 20, textAlign: 'center' }}>
+      <div style={{ fontSize: 80, marginBottom: 16 }}>🎉</div>
+      <h1 style={{ fontSize: 28, marginBottom: 8, color: '#333' }}>
+        {themeComplete ? '🎊 主题完成！' : `✅ 第${currentLevel}关完成！`}
       </h1>
-      <p className="result-subtitle">
+      <p style={{ fontSize: 16, color: '#666', marginBottom: 24 }}>
         {themeComplete 
-          ? `You mastered ${currentTheme.name}!`
-          : `You learned ${levelWordObjects.length} new words!`
+          ? `你完成了「${currentTheme.name}」主题的所有学习！`
+          : `完成${getLevelName()}，学习了 ${learnedItems.length} 个内容`
         }
       </p>
 
-      <div className="result-words" style={{ margin: '32px 0' }}>
-        <p className="result-words-title" style={{ marginBottom: 16 }}>Words Learned</p>
-        <div className="result-words-list">
-          {levelWordObjects.map(word => (
-            <div 
-              key={word.id} 
-              className="result-word"
-              style={{
-                padding: '12px 20px',
-                fontSize: 18,
-              }}
-            >
-              <div style={{ fontWeight: 600 }}>{word.char}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{word.english}</div>
+      {/* 学习内容展示 */}
+      <div style={{ 
+        margin: '24px 0', 
+        textAlign: 'left',
+        maxWidth: 400,
+        marginLeft: 'auto',
+        marginRight: 'auto'
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: '#757575' }}>
+          {currentLevel === 2 ? '句子列表' : '词汇列表'}
+        </div>
+        <div style={{ 
+          background: '#f5f5f5', 
+          borderRadius: 12, 
+          padding: 12,
+          maxHeight: 200,
+          overflow: 'auto'
+        }}>
+          {learnedItems.length > 0 ? (
+            learnedItems.map((item: any) => (
+              <div 
+                key={item.id}
+                style={{
+                  padding: '8px 12px',
+                  background: 'white',
+                  borderRadius: 8,
+                  marginBottom: 8,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{ fontSize: 18, fontWeight: 600 }}>{(item as any).char || (item as any).text}</span>
+                <span style={{ fontSize: 12, color: '#9E9E9E' }}>{item.english}</span>
+              </div>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', color: '#999', padding: 20 }}>
+              暂无内容
             </div>
-          ))}
+          )}
         </div>
       </div>
 
-      <div className="result-actions" style={{ gap: 16 }}>
+      {/* 操作按钮 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
         <button 
-          className="btn btn-primary" 
           onClick={handleNextLevel}
-          style={{ padding: '16px 48px', fontSize: 18 }}
+          style={{
+            padding: '14px 48px',
+            fontSize: 16,
+            background: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: 12,
+            cursor: 'pointer',
+            width: '100%',
+            maxWidth: 300,
+          }}
         >
-          {currentLevel < 3 ? 'Next Level →' : 'Continue'}
+          {currentLevel < 3 ? '下一关 →' : '返回首页'}
         </button>
+        
+        {!themeComplete && (
+          <button 
+            onClick={handleViewStats}
+            style={{
+              padding: '12px 32px',
+              fontSize: 14,
+              background: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: 10,
+              cursor: 'pointer',
+              width: '100%',
+              maxWidth: 300,
+            }}
+          >
+            📊 查看学习统计
+          </button>
+        )}
         
         {themeComplete && (
           <button 
-            className="btn btn-secondary" 
             onClick={handleBackHome}
-            style={{ padding: '14px 32px' }}
+            style={{
+              padding: '12px 32px',
+              fontSize: 14,
+              background: '#757575',
+              color: 'white',
+              border: 'none',
+              borderRadius: 10,
+              cursor: 'pointer',
+              width: '100%',
+              maxWidth: 300,
+            }}
           >
-            Back to Home
+            🏠 返回首页
           </button>
         )}
       </div>

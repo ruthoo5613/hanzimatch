@@ -19,7 +19,10 @@ export function Level3() {
   };
 
   const handleFinish = () => {
-    setLevel(3);
+    // 标记第3关完成
+    if (currentTheme) {
+      useGameStore.getState().completeLevel(currentTheme.id, 3);
+    }
     setPhase('result');
   };
 
