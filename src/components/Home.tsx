@@ -138,15 +138,23 @@ export function Home() {
                   padding: 20,
                   background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'white',
                   cursor: unlocked ? 'pointer' : 'not-allowed',
+                  minHeight: 80,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
-                <div className="theme-info">
-                  <div className="theme-name" style={{ fontSize: 20 }}>{theme.name}</div>
-                  {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span className="theme-icon" style={{ fontSize: 40 }}>{theme.icon}</span>
+                  <div className="theme-info">
+                    <div className="theme-name" style={{ fontSize: 18 }}>{theme.name}</div>
+                    {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
+                  </div>
                 </div>
-                {completed && <span className="theme-status">✓</span>}
-                {!unlocked && <span className="theme-status locked">🔒</span>}
+                <div>
+                  {completed && <span className="theme-status">✓</span>}
+                  {!unlocked && <span className="theme-status locked">🔒</span>}
+                </div>
               </div>
             );
           })}
