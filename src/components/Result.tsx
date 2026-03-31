@@ -88,11 +88,12 @@ export function Result() {
   };
 
   const handleBackHome = () => {
-    handleThemeComplete();
+    // 主题完成后直接返回首页
     setPhase('home');
   };
 
   const handleViewStats = () => {
+    // 主题完成时才显示统计按钮，点击进入统计页面
     setPhase('stats');
   };
 
@@ -172,7 +173,7 @@ export function Result() {
           {currentLevel < 3 ? '下一关 →' : '返回首页'}
         </button>
         
-        {!themeComplete && (
+        {themeComplete && (
           <button 
             onClick={handleViewStats}
             style={{
