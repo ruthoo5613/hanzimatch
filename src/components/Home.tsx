@@ -105,8 +105,25 @@ export function Home() {
 
       {/* 学习模式入口 */}
       <div className="themes-section">
-        <h2 className="themes-title">🎮 学习模式</h2>
-        <div className="themes-list">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h2 className="themes-title" style={{ margin: 0 }}>🎮 学习模式</h2>
+          <button 
+            onClick={() => setPhase('guestbook')}
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              background: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: 10,
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+          >
+            📝 留言板
+          </button>
+        </div>
+        <div className="themes-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {themes.map((theme) => {
             const unlocked = isThemeUnlocked(theme.id);
             const completed = isThemeCompleted(theme.id);
@@ -147,29 +164,6 @@ export function Home() {
           <p style={{ marginBottom: 12 }}>🏠 <strong>场景化学习</strong> - 餐厅、酒店、开车...覆盖日常生活场景 / Scenario-based learning for daily life</p>
           <p style={{ marginBottom: 12 }}>📚 <strong>高频词汇</strong> - 精选日常生活最高频词汇 / High-frequency words for everyday use</p>
           <p style={{ marginBottom: 12 }}>👂 听发音 → 👄 跟读练习 → 📖 情景视频，三步掌握实用表达 / Listen → Practice → Watch in context</p>
-        </div>
-      </div>
-
-      {/* 用户留言板块 */}
-      <div className="themes-section" style={{ marginTop: 32 }}>
-        <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>反馈建议 / Feedback</div>
-          <p style={{ marginBottom: 16, color: '#757575' }}>欢迎提交您的使用建议和问题 / Your feedback helps us improve</p>
-          <button 
-            onClick={() => setPhase('guestbook')}
-            style={{
-              display: 'inline-block',
-              padding: '12px 24px',
-              background: '#2196F3',
-              color: 'white',
-              border: 'none',
-              borderRadius: 10,
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
-          >
-            📝 留言板 / Guestbook
-          </button>
         </div>
       </div>
     </div>
