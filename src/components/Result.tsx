@@ -156,39 +156,39 @@ export function Result() {
 
       {/* 操作按钮 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-        <button 
-          onClick={handleNextLevel}
-          style={{
-            padding: '14px 48px',
-            fontSize: 16,
-            background: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: 12,
-            cursor: 'pointer',
-            width: '100%',
-            maxWidth: 300,
-          }}
-        >
-          {currentLevel < 3 ? '下一关 →' : '返回首页'}
-        </button>
-        
-        {themeComplete && (
+        {themeComplete ? (
           <button 
             onClick={handleViewStats}
             style={{
-              padding: '12px 32px',
-              fontSize: 14,
-              background: '#2196F3',
+              padding: '14px 48px',
+              fontSize: 16,
+              background: '#4CAF50',
               color: 'white',
               border: 'none',
-              borderRadius: 10,
+              borderRadius: 12,
               cursor: 'pointer',
               width: '100%',
               maxWidth: 300,
             }}
           >
             📊 查看学习统计
+          </button>
+        ) : (
+          <button 
+            onClick={handleNextLevel}
+            style={{
+              padding: '14px 48px',
+              fontSize: 16,
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: 12,
+              cursor: 'pointer',
+              width: '100%',
+              maxWidth: 300,
+            }}
+          >
+            下一关 →
           </button>
         )}
         
