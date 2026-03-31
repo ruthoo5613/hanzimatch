@@ -13,15 +13,19 @@ export function Guestbook() {
   const { setPhase } = useGameStore();
   const { user, isAuthenticated } = useAuthStore();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newName, setNewName] = useState('');
   const [newContent, setNewContent] = useState('');
 
-  // 自动获取Google用户名
+  // 自动获取Google用户名并保存到localStorage
   useEffect(() => {
     if (isAuthenticated && user?.displayName) {
-      setNewName(user.displayName);
+      localStorage.setItem('hanzimatch_username', user.displayName);
     }
   }, [isAuthenticated, user]);
+
+  // 获取保存的用户名
+  const getUserName = () => {
+    return localStorage.getItem('hanzimatch_username') || 'Anonymous';
+  };
 
   useEffect(() => {
     // 从 localStorage 读取留言
@@ -41,11 +45,11 @@ export function Guestbook() {
   }, []);
 
   const handleAddMessage = () => {
-    if (!newName.trim() || !newContent.trim()) return;
+    if (!newContent.trim()) return;
 
     const newMessage: Message = {
       id: Date.now(),
-      name: newName.trim(),
+      name: getUserName(),
       content: newContent.trim(),
       date: new Date().toISOString().split('T')[0],
     };
@@ -53,7 +57,6 @@ export function Guestbook() {
     const updated = [newMessage, ...messages];
     setMessages(updated);
     localStorage.setItem('hanzimatch_messages', JSON.stringify(updated));
-    setNewName('');
     setNewContent('');
   };
 
@@ -76,20 +79,6 @@ export function Guestbook() {
       {/* 新增留言 */}
       <div style={{ marginBottom: 24, padding: 16, background: '#F5F5F5', borderRadius: 12 }}>
         <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>发表留言 / Leave a message</div>
-        <input
-          type="text"
-          placeholder="您的名字 / Your name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            marginBottom: 8,
-            border: '1px solid #E0E0E0',
-            borderRadius: 8,
-            fontSize: 14,
-          }}
-        />
         <textarea
           placeholder="写下您的建议 / Your feedback"
           value={newContent}
@@ -107,16 +96,16 @@ export function Guestbook() {
         />
         <button
           onClick={handleAddMessage}
-          disabled={!newName.trim() || !newContent.trim()}
+          disabled={!newContent.trim()}
           style={{
             width: '100%',
             padding: '12px',
-            background: newName.trim() && newContent.trim() ? '#4CAF50' : '#BDBDBD',
+            background: newContent.trim() ? '#4CAF50' : '#BDBDBD',
             color: 'white',
             border: 'none',
             borderRadius: 8,
             fontSize: 14,
-            cursor: newName.trim() && newContent.trim() ? 'pointer' : 'not-allowed',
+            cursor: newContent.trim() ? 'pointer' : 'not-allowed',
           }}
         >
           提交 / Submit
