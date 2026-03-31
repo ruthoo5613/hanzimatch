@@ -159,19 +159,20 @@ export function Home() {
               <div
                 key={theme.id}
                 style={{
-                  padding: 20,
+                  padding: '12px 20px',
                   background: '#f5f5f5',
                   borderRadius: 12,
                   cursor: 'default',
                   opacity: 0.7,
-                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
                 }}
               >
-                <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
-                <div className="theme-info">
-                  <div className="theme-name" style={{ fontSize: 20 }}>{theme.name}</div>
-                  {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
-                </div>
+                <span style={{ fontSize: 24 }}>{theme.icon}</span>
+                <div style={{ fontSize: 18, color: '#666' }}>{theme.name}</div>
+                {theme.nameEn && <div style={{ fontSize: 14, color: '#9E9E9E' }}>{theme.nameEn}</div>}
                 <span style={{ color: '#9E9E9E' }}>🔜</span>
               </div>
             ))}
