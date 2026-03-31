@@ -110,15 +110,18 @@ export function Home() {
           {themes.map((theme) => {
             const unlocked = isThemeUnlocked(theme.id);
             const completed = isThemeCompleted(theme.id);
+            const isComingSoon = theme.id === 'coming_soon';
 
             return (
               <div
                 key={theme.id}
-                className={`theme-card ${!unlocked ? 'locked' : ''}`}
-                onClick={() => handleSelectTheme(theme)}
+                className={`theme-card ${!unlocked && !isComingSoon ? 'locked' : ''}`}
+                onClick={() => !isComingSoon && handleSelectTheme(theme)}
                 style={{
                   padding: 20,
-                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'white',
+                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : isComingSoon ? '#f5f5f5' : 'white',
+                  cursor: isComingSoon ? 'default' : unlocked ? 'pointer' : 'not-allowed',
+                  opacity: isComingSoon ? 0.7 : 1,
                 }}
               >
                 <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
@@ -127,7 +130,8 @@ export function Home() {
                   {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
                 </div>
                 {completed && <span className="theme-status">✓</span>}
-                {!unlocked && <span className="theme-status locked">🔒</span>}
+                {!unlocked && !isComingSoon && <span className="theme-status locked">🔒</span>}
+                {isComingSoon && <span className="theme-status" style={{ color: '#9E9E9E' }}>🔜</span>}
               </div>
             );
           })}

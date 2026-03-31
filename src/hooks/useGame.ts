@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
-import { restaurantThemeV2, hotelTheme, drivingTheme } from '../data';
+import { restaurantThemeV2, hotelTheme, drivingTheme, comingSoonTheme } from '../data';
 
 interface GameStore extends GameState {
   themes: Theme[];
@@ -35,7 +35,7 @@ export const useGameStore = create<GameStore>()(
     (set, get) => ({
       ...initialState,
       // 旧版主题 + 新版v2主题
-      themes: [restaurantThemeV2, hotelTheme, drivingTheme],
+      themes: [restaurantThemeV2, hotelTheme, drivingTheme, comingSoonTheme],
 
       setTheme: (theme: Theme) => {
         // 获取第1关的词汇（兼容新旧两种数据结构）
