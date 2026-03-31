@@ -1,18 +1,11 @@
 /**
  * 腾讯云 ASR Cloudflare Workers 版本
- * 
- * 部署方式：
- * 1. cd server && wrangler deploy
- * 2. 或在 Cloudflare Dashboard 创建 Workers
- * 
- * 环境变量（在 Workers 设置中添加）：
- * - TENCENTCLOUD_SECRET_ID
- * - TENCENTCLOUD_SECRET_KEY
+ * 使用 URL 参数签名方式
  */
 
 export default {
   async fetch(request, env, ctx) {
-    // CORS 处理
+    // CORS
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
@@ -41,6 +34,7 @@ export default {
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
         });
       } catch (error) {
+        console.error('ASR Error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
           status: 500,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -52,80 +46,125 @@ export default {
   },
 };
 
-// 调用腾讯云 ASR API
+// 使用腾讯云 REST API URL 签名方式
 async function callTencentASR(secretId, secretKey, audioBase64) {
-  const timestamp = Math.floor(Date.now() / 1000);
-  const payload = JSON.stringify({
+  const endpoint = 'asr.tencentcloudapi.com';
+  const service = 'asr';
+  
+  const timestamp = Math.floor(Date.now() / 1000) * 1000;  // 毫秒
+  const date = new Date(timestamp).toISOString().split('T')[0];
+  
+  // 构建 GET 请求参数（按字母顺序）
+  const params = new URLSearchParams({
+    Action: 'SentenceRecognition',
+    Version: '2019-06-14',
+    Region: 'ap-guangzhou',
     EngineType: '16k',
     Audio: audioBase64,
     VoiceFormat: 'wav',
-    SampleRate: 16000,
-    Seq: 1,
-    End: 1,
+    SampleRate: '16000',
+    Seq: '1',
+    End: '1',
+    Timestamp: timestamp.toString(),
+   Nonce: Math.floor(Math.random() * 1000000).toString(),
   });
 
-  const authorization = generateSignature(secretId, secretKey, payload, timestamp);
+  // GET 请求 URL
+  const method = 'GET';
+  const path = '/';
+  const queryString = params.toString();
+  const url = `https://${endpoint}/${path}?${queryString}`;
 
-  const response = await fetch('https://asr.tencentcloudapi.com/', {
-    method: 'POST',
+  // 生成签名
+  const authorization = await generateTC3Signature(
+    secretId, secretKey, method, path, queryString, timestamp, date
+  );
+
+  // 发送请求
+  const response = await fetch(url, {
+    method: method,
     headers: {
+      'Host': endpoint,
       'Content-Type': 'application/json',
-      'Host': 'asr.tencentcloudapi.com',
-      'X-TC-Action': 'SentenceRecog',
-      'X-TC-Version': '2019-06-14',
-      'X-TC-Timestamp': timestamp.toString(),
       'Authorization': authorization,
+      'X-TC-Action': 'SentenceRecognition',
+      'X-TC-Version': '2019-06-14',
+      'X-TC-Timestamp': Math.floor(timestamp / 1000).toString(),
+      'X-TC-Region': 'ap-guangzhou',
     },
-    body: payload,
   });
 
   const result = await response.json();
   
   if (result.Response && result.Response.Result) {
     return result.Response.Result;
+  } else if (result.Response && result.Response.Error) {
+    throw new Error(JSON.stringify(result.Response.Error));
   } else {
     throw new Error(JSON.stringify(result));
   }
 }
 
-// 简单的 hash 和 hmac 实现（使用 Web Crypto API）
-function hex(buff) {
-  return Array.from(new Uint8Array(buff)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function sha256(message) {
-  return await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
-}
-
-async function hmac(key, message) {
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  return await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
-}
-
-// 生成 TC3-HMAC-SHA256 签名
-async function generateSignature(secretId, secretKey, payload, timestamp) {
-  const date = new Date(timestamp * 1000).toISOString().split('T')[0];
-
-  const httpRequestMethod = 'POST';
-  const canonicalUri = '/';
-  const canonicalQuerystring = '';
-  const contentType = 'application/json';
-  const canonicalHeaders = `content-type:${contentType}\nhost:asr.tencentcloudapi.com\nx-tc-action:sentenceRecog\n`;
-  const signedHeaders = 'content-type;host;x-tc-action';
-  const hashedRequestPayload = hex(await sha256(payload));
-
-  const canonicalRequest = `${httpRequestMethod}\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\n${signedHeaders}\n${hashedRequestPayload}`;
-
+// TC3-HMAC-SHA256 签名
+async function generateTC3Signature(secretId, secretKey, method, path, queryString, timestamp, date) {
   const algorithm = 'TC3-HMAC-SHA256';
-  const credentialScope = `${date}/asr/tc3_request`;
-  const hashedCanonicalRequest = hex(await sha256(canonicalRequest));
-  const stringToSign = `${algorithm}\n${timestamp}\n${credentialScope}\n${hashedCanonicalRequest}`;
+  const service = 'asr';
+  
+  // 1. 规范请求串
+  const canonicalUri = path;
+  const canonicalQueryString = queryString;
+  const canonicalHeaders = `content-type:application/json\nhost:asr.tencentcloudapi.com\n`;
+  const signedHeaders = 'content-type;host';
+  
+  const hashedRequestPayload = await sha256Hex('');
+  
+  const canonicalRequest = [
+    method,
+    canonicalUri,
+    canonicalQueryString,
+    canonicalHeaders,
+    signedHeaders,
+    hashedRequestPayload,
+  ].join('\n');
 
-  const secretDate = await hmac(new TextEncoder().encode('TC3' + secretKey), date);
-  const secretSigning = await hmac(secretDate, 'asr');
-  const signature = hex(await hmac(secretSigning, stringToSign));
+  // 2. 拼接待签名字符串
+  const credentialScope = `${date}/${service}/tc3_request`;
+  const hashedCanonicalRequest = await sha256Hex(canonicalRequest);
+  const stringToSign = [
+    algorithm,
+    Math.floor(timestamp / 1000),
+    credentialScope,
+    hashedCanonicalRequest,
+  ].join('\n');
 
+  // 3. 计算签名
+  const kSecretKey = 'TC3' + secretKey;
+  const kDate = await hmacHex(kSecretKey, date);
+  const kService = await hmacHex(kDate, service);
+  const kSigning = await hmacHex(kService, 'tc3_request');
+  const signature = await hmacHex(kSigning, stringToSign);
+
+  // 4. 拼接
   return `${algorithm} Credential=${secretId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+}
+
+async function sha256Hex(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  return bin2hex(hashBuffer);
+}
+
+async function hmacHex(key, message) {
+  const keyBuffer = typeof key === 'string' ? new TextEncoder().encode(key) : key;
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', keyBuffer, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
+  return bin2hex(signature);
+}
+
+function bin2hex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }

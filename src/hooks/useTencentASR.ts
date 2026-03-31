@@ -33,11 +33,13 @@ export async function callTencentASR(audioBase64: string): Promise<ASRResult> {
       body: JSON.stringify({ audio: audioBase64 }),
     });
 
-    if (!response.ok) {
-      throw new Error(`ASR server error: ${response.status}`);
-    }
-
     const data = await response.json();
+    
+    // 检查是否返回错误
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
     return {
       text: data.text || data.Result || '',
     };
@@ -68,16 +70,19 @@ export function audioBlobToBase64(blob: Blob): Promise<string> {
  */
 export async function checkASRServer(): Promise<boolean> {
   try {
+    // 使用 POST 而不是 HEAD，因为 Workers 对 HEAD 请求处理可能有问题
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
+    const timeout = setTimeout(() => controller.abort(), 3000);
     
     const response = await fetch(ASR_SERVER_URL, {
-      method: 'HEAD',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ health: true }),
       signal: controller.signal,
     });
     
     clearTimeout(timeout);
-    return response.ok;
+    return response.ok || response.status === 400; // 400 也说明服务在线
   } catch {
     return false;
   }

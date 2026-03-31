@@ -1,14 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSpeech } from '../hooks/useSpeech';
+import { useRecorder } from '../hooks/useRecorder';
+import { callTencentASR, audioBlobToBase64 } from '../hooks/useTencentASR';
 
 export function Level2() {
-  const { currentSentences, setPhase } = useGameStore();
+  const { currentSentences, setPhase, setLevel } = useGameStore();
+  
+  // 确保关卡数正确
+  useEffect(() => {
+    setLevel(2);
+  }, []);
+  
   const { speak } = useSpeech();
+  const { isRecording, audioBlob, startRecording, stopRecording, clearRecording } = useRecorder();
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
   
   const currentSentence = currentSentences[currentIndex];
 
@@ -31,14 +41,63 @@ export function Level2() {
     speak(currentSentence.text);
   };
 
+  const handleStartRecord = () => {
+    startRecording();
+  };
+
+  const handleStopRecord = async () => {
+    stopRecording();
+    // 等待音频blob生成
+    setTimeout(async () => {
+      if (audioBlob) {
+        setIsEvaluating(true);
+        try {
+          const base64 = await audioBlobToBase64(audioBlob);
+          const result = await callTencentASR(base64);
+          
+          // 简单评分：比较识别结果与原句
+          const recognized = result.text.replace(/\s/g, '').toLowerCase();
+          const original = currentSentence.text.replace(/\s/g, '').toLowerCase();
+          
+          // 计算相似度
+          let matchScore = 0;
+          if (recognized === original) {
+            matchScore = 100;
+          } else if (original.includes(recognized) || recognized.includes(original)) {
+            matchScore = 80;
+          } else {
+            // 逐字匹配计算相似度
+            let same = 0;
+            const maxLen = Math.max(original.length, recognized.length);
+            for (let i = 0; i < Math.min(original.length, recognized.length); i++) {
+              if (original[i] === recognized[i]) same++;
+            }
+            matchScore = Math.round((same / maxLen) * 100);
+          }
+          
+          setScore(matchScore);
+          setShowResult(true);
+        } catch (err) {
+          console.error('Evaluation error:', err);
+          setScore(0);
+          setShowResult(true);
+        } finally {
+          setIsEvaluating(false);
+        }
+      }
+    }, 500);
+  };
+
   const handleNext = () => {
     if (currentIndex < currentSentences.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setScore(null);
       setShowResult(false);
+      clearRecording();
       setTimeout(() => speak(currentSentences[currentIndex + 1].text), 500);
     } else {
       // 完成第2关，进入第3关
+      setLevel(2);
       setPhase('level3');
     }
   };
@@ -51,16 +110,16 @@ export function Level2() {
     <div style={{ padding: 20, minHeight: '100vh', background: '#fff' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <button onClick={handleBack} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer' }}>←</button>
+        <button onClick={handleBack} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#333' }}>←</button>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 14, color: '#757575' }}>第2关</div>
-          <div style={{ fontWeight: 600 }}>句型练习</div>
+          <div style={{ fontSize: 13, color: '#757575' }}>第2关</div>
+          <div style={{ fontSize: 15, fontWeight: 600 }}>句型练习</div>
         </div>
         <div style={{ width: 40 }}></div>
       </div>
 
       {/* Progress */}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 40 }}>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 32 }}>
         {currentSentences.map((_, i) => (
           <div
             key={i}
@@ -75,14 +134,51 @@ export function Level2() {
       </div>
 
       {/* Sentence Card */}
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ fontSize: 36, fontWeight: 700, marginBottom: 16, lineHeight: 1.5 }}>
-          {currentSentence.text}
+      <div style={{ textAlign: 'center', padding: '32px 20px' }}>
+        {/* 汉字和拼音 - 每个字对应一个拼音 */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          flexWrap: 'wrap', 
+          gap: 12,
+          marginBottom: 20,
+        }}>
+          {currentSentence.text.split('').map((char, i) => {
+            // 按空格分割拼音，每个音节对应一个汉字
+            const syllables = currentSentence.pinyin.split(' ').filter(s => s);
+            // 处理字符数多于拼音数的情况（如wifi整体作为一个词）
+            const pinyin = i < syllables.length ? syllables[i] : (syllables[syllables.length - 1] || '');
+            
+            return (
+              <div key={i} style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+              }}>
+                <div style={{ 
+                  fontSize: 13, 
+                  color: '#4CAF50',
+                  fontWeight: 500,
+                  height: 18,
+                  lineHeight: '18px',
+                  marginBottom: 4,
+                }}>
+                  {pinyin}
+                </div>
+                <div style={{ 
+                  fontSize: 32, 
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                }}>
+                  {char}
+                </div>
+              </div>
+            );
+          })}
         </div>
-        <div style={{ fontSize: 18, color: '#2196F3', marginBottom: 8 }}>
-          {currentSentence.pinyin}
-        </div>
-        <div style={{ fontSize: 16, color: '#757575', marginBottom: 32 }}>
+
+        {/* 英文翻译 */}
+        <div style={{ fontSize: 15, color: '#757575', marginBottom: 28 }}>
           {currentSentence.english}
         </div>
 
@@ -97,11 +193,73 @@ export function Level2() {
             border: 'none',
             borderRadius: 12,
             cursor: 'pointer',
-            marginBottom: 24,
+            marginBottom: 16,
           }}
         >
           🔊 播放句子
         </button>
+
+        {/* Follow Read Section */}
+        <div style={{ marginBottom: 16 }}>
+          {!isRecording ? (
+            <button
+              onClick={handleStartRecord}
+              disabled={isEvaluating}
+              style={{
+                padding: '16px 32px',
+                fontSize: 18,
+                background: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: 12,
+                cursor: 'pointer',
+              }}
+            >
+              🎤 跟读句子
+            </button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 8,
+                padding: '12px 20px',
+                background: '#FFEBEE',
+                borderRadius: 10,
+              }}>
+                <span style={{ 
+                  width: 12, 
+                  height: 12, 
+                  borderRadius: '50%', 
+                  background: '#F44336',
+                  animation: 'pulse 1s infinite',
+                }}></span>
+                <span style={{ fontSize: 16, color: '#D32F2F' }}>录音中...</span>
+              </div>
+              <button
+                onClick={handleStopRecord}
+                disabled={isEvaluating}
+                style={{
+                  padding: '12px 32px',
+                  fontSize: 16,
+                  background: '#F44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                }}
+              >
+                ⏹ 停止录音
+              </button>
+            </div>
+          )}
+          
+          {isEvaluating && (
+            <div style={{ marginTop: 16, color: '#757575', fontSize: 14 }}>
+              评分中...
+            </div>
+          )}
+        </div>
 
         {/* Result Feedback */}
         {showResult && score !== null && (
@@ -124,19 +282,18 @@ export function Level2() {
         )}
       </div>
 
-      {/* Bottom Actions */}
-      <div style={{ position: 'fixed', bottom: 40, left: 20, right: 20 }}>
+      {/* Next Button - fixed at bottom */}
+      <div style={{ position: 'fixed', bottom: 40, left: 20, right: 20, display: 'flex', justifyContent: 'center' }}>
         <button
           onClick={handleNext}
           style={{
-            width: '100%',
-            padding: 16,
-            fontSize: 18,
+            fontSize: 14,
             background: '#2196F3',
             color: 'white',
             border: 'none',
-            borderRadius: 12,
+            borderRadius: 10,
             cursor: 'pointer',
+            padding: '12px 24px',
           }}
         >
           {currentIndex < currentSentences.length - 1 ? '下一句 →' : '进入第3关 →'}

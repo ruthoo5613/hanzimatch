@@ -4,7 +4,7 @@ import { useSpeech } from '../hooks/useSpeech';
 import { useRecorder } from '../hooks/useRecorder';
 
 export function Phase3() {
-  const { currentTheme, currentLevel, currentWords, completeLevel, unlockTheme, setPhase } = useGameStore();
+  const { currentTheme, currentLevel, currentWords, completeLevel, setPhase } = useGameStore();
   const { speak } = useSpeech();
   const { isRecording, audioUrl, startRecording, stopRecording, clearRecording } = useRecorder();
 
@@ -20,16 +20,9 @@ export function Phase3() {
     
     completeLevel(currentTheme.id, currentLevel);
     
-    // 通关第3关时解锁下一个主题
+    // 通关第3关时完成当前主题学习
     if (currentLevel === 3) {
-      // 景区通关后解锁餐厅
-      if (currentTheme.id === 'scenic') {
-        unlockTheme('restaurant');
-      }
-      // 餐厅通关后解锁出租车
-      else if (currentTheme.id === 'restaurant') {
-        unlockTheme('taxi');
-      }
+      // 可以在这里添加其他逻辑
     }
   };
 

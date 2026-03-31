@@ -9,13 +9,25 @@ export function useAudioRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      // 检查浏览器支持的 MIME 类型
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/mp4';
+        }
+      }
+      
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType
       });
 
       chunksRef.current = [];
@@ -24,14 +36,6 @@ export function useAudioRecorder() {
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
-        
-        // 停止所有 tracks
-        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorderRef.current = mediaRecorder;
@@ -45,13 +49,29 @@ export function useAudioRecorder() {
 
   const stopRecording = useCallback(async (): Promise<string | null> => {
     return new Promise((resolve) => {
-      if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+      const recorder = mediaRecorderRef.current;
+      const stream = streamRef.current;
+      
+      if (!recorder || recorder.state === 'inactive') {
+        console.log('Recorder not active');
         resolve(null);
         return;
       }
 
-      mediaRecorderRef.current.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+      recorder.onstop = async () => {
+        // 停止流
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        
+        // 检查是否有音频数据
+        if (chunksRef.current.length === 0) {
+          console.log('No audio chunks');
+          resolve(null);
+          return;
+        }
+        
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
         setAudioBlob(blob);
         
         try {
@@ -61,12 +81,9 @@ export function useAudioRecorder() {
           console.error('Failed to convert audio:', error);
           resolve(null);
         }
-
-        // 停止所有 tracks
-        mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorderRef.current.stop();
+      recorder.stop();
       setIsRecording(false);
     });
   }, []);

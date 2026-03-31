@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
-import { scenicTheme, restaurantTheme, taxiTheme } from '../data';
-import { restaurantThemeV2 } from '../data/restaurantV2';
+import { restaurantThemeV2, hotelTheme, drivingTheme } from '../data';
 
 interface GameStore extends GameState {
   themes: Theme[];
@@ -25,7 +24,7 @@ const initialState: GameState = {
   currentLevel: 1,
   phase: 'home',
   learnedWords: [],
-  unlockedThemes: ['scenic', 'restaurant', 'taxi', 'restaurant_v2'], 
+  unlockedThemes: ['restaurant_v2', 'hotel', 'driving'], 
   completedLevels: [],
   currentWords: [],
   currentSentences: [],
@@ -36,7 +35,7 @@ export const useGameStore = create<GameStore>()(
     (set, get) => ({
       ...initialState,
       // 旧版主题 + 新版v2主题
-      themes: [scenicTheme, restaurantTheme, taxiTheme, restaurantThemeV2],
+      themes: [restaurantThemeV2, hotelTheme, drivingTheme],
 
       setTheme: (theme: Theme) => {
         // 获取第1关的词汇（兼容新旧两种数据结构）
@@ -61,9 +60,8 @@ export const useGameStore = create<GameStore>()(
           currentSentences: sentences,
         });
         
-        // 只有 restaurant_v2 使用新版 level1 界面（左侧词汇列表）
-        // 其他主题（版本1的景区、出租车、餐厅）保持原来的 phase1 界面
-        if (theme.id === 'restaurant_v2' && level1?.type === 'words') {
+        // 只有 restaurant_v2, hotel, driving 使用新版 level1 界面（左侧词汇列表）
+        if ((theme.id === 'restaurant_v2' || theme.id === 'hotel' || theme.id === 'driving') && level1?.type === 'words') {
           set({ phase: 'level1' });
         } else {
           // 旧主题默认进入 phase1

@@ -1,13 +1,10 @@
 import { useGameStore } from '../hooks/useGame';
-import { useReviewStore } from '../hooks/useReview';
 import { useAuthStore } from '../hooks/useAuth';
 import type { Theme } from '../types';
 
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
-  const { getStats } = useReviewStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
-  const stats = getStats();
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) return;
@@ -102,8 +99,8 @@ export function Home() {
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>HanziMatch 🀄</h1>
-        <p className="home-subtitle">Learn Chinese while playing!</p>
+        <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Chinese Language Learning 🇺🇸</h1>
+        <p className="home-subtitle">Master Chinese through immersive games!</p>
       </div>
 
       {/* 学习模式入口 */}
@@ -127,6 +124,7 @@ export function Home() {
                 <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
                 <div className="theme-info">
                   <div className="theme-name" style={{ fontSize: 20 }}>{theme.name}</div>
+                  {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
                 </div>
                 {completed && <span className="theme-status">✓</span>}
                 {!unlocked && <span className="theme-status locked">🔒</span>}
@@ -136,56 +134,38 @@ export function Home() {
         </div>
       </div>
 
-      {/* 复习和统计入口 */}
-      <div className="themes-section" style={{ marginTop: 24 }}>
-        <h2 className="themes-title">📖 复习与统计</h2>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div 
-            className="card"
-            onClick={() => setPhase('review')}
-            style={{ 
-              flex: 1, 
-              textAlign: 'center', 
-              cursor: 'pointer',
-              background: stats.toReview > 0 ? 'linear-gradient(135deg, #FFF3E0, #FFE0B2)' : 'white',
-              border: stats.toReview > 0 ? '2px solid #FF9800' : '2px solid #E0E0E0',
-            }}
-          >
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📖</div>
-            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>复习</div>
-            <div style={{ fontSize: 14, color: stats.toReview > 0 ? '#FF9800' : '#757575' }}>
-              {stats.toReview > 0 ? `${stats.toReview} 词待复习` : '暂无复习'}
-            </div>
-          </div>
 
-          <div 
-            className="card"
-            onClick={() => setPhase('stats')}
-            style={{ 
-              flex: 1, 
-              textAlign: 'center', 
-              cursor: 'pointer',
-              background: 'white',
-              border: '2px solid #E0E0E0',
-            }}
-          >
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📊</div>
-            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>统计</div>
-            <div style={{ fontSize: 14, color: '#757575' }}>
-              已掌握 {stats.mastered} 词
-            </div>
-          </div>
+      {/* 产品说明 */}
+      <div className="themes-section" style={{ marginTop: 32 }}>
+        <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>关于 HanziMatch</div>
+          <p style={{ marginBottom: 12 }}>🎯 <strong>可理解输入</strong> - 在真实场景中学习，理解比记忆更重要 / Comprehensible input in real contexts</p>
+          <p style={{ marginBottom: 12 }}>🏠 <strong>场景化学习</strong> - 餐厅、酒店、开车...覆盖日常生活场景 / Scenario-based learning for daily life</p>
+          <p style={{ marginBottom: 12 }}>📚 <strong>高频词汇</strong> - 精选日常生活最高频词汇 / High-frequency words for everyday use</p>
+          <p style={{ marginBottom: 12 }}>👂 听发音 → 👄 跟读练习 → 📖 情景视频，三步掌握实用表达 / Listen → Practice → Watch in context</p>
         </div>
       </div>
 
-      {/* 说明 */}
+      {/* 用户留言板块 */}
       <div className="themes-section" style={{ marginTop: 32 }}>
         <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>How to Play</div>
-          <p style={{ marginBottom: 12 }}>🎧 <strong>Listen</strong> - Hear the pronunciation</p>
-          <p style={{ marginBottom: 12 }}>👆 <strong>Choose</strong> - Pick the right character</p>
-          <p style={{ marginBottom: 12 }}>🎮 <strong>Match</strong> - Find matching words</p>
-          <p>🗣️ <strong>Speak</strong> - Practice pronunciation</p>
+          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>反馈建议 / Feedback</div>
+          <p style={{ marginBottom: 16, color: '#757575' }}>欢迎提交您的使用建议和问题 / Your feedback helps us improve</p>
+          <button 
+            onClick={() => setPhase('guestbook')}
+            style={{
+              display: 'inline-block',
+              padding: '12px 24px',
+              background: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: 10,
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+          >
+            📝 留言板 / Guestbook
+          </button>
         </div>
       </div>
     </div>
