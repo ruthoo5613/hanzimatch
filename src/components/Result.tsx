@@ -92,11 +92,6 @@ export function Result() {
     setPhase('home');
   };
 
-  const handleViewStats = () => {
-    // 主题完成时才显示统计按钮，点击进入统计页面
-    setPhase('stats');
-  };
-
   return (
     <div className="result-page" style={{ padding: 20, textAlign: 'center' }}>
       <div style={{ fontSize: 80, marginBottom: 16 }}>🎉</div>
@@ -158,7 +153,7 @@ export function Result() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
         {themeComplete ? (
           <button 
-            onClick={handleViewStats}
+            onClick={handleBackHome}
             style={{
               padding: '14px 48px',
               fontSize: 16,
@@ -171,7 +166,7 @@ export function Result() {
               maxWidth: 300,
             }}
           >
-            📊 查看学习统计
+            🏠 返回首页
           </button>
         ) : (
           <button 
@@ -189,25 +184,6 @@ export function Result() {
             }}
           >
             下一关 →
-          </button>
-        )}
-        
-        {themeComplete && (
-          <button 
-            onClick={handleBackHome}
-            style={{
-              padding: '12px 32px',
-              fontSize: 14,
-              background: '#757575',
-              color: 'white',
-              border: 'none',
-              borderRadius: 10,
-              cursor: 'pointer',
-              width: '100%',
-              maxWidth: 300,
-            }}
-          >
-            🏠 返回首页
           </button>
         )}
       </div>
