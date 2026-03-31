@@ -124,21 +124,20 @@ export function Home() {
           </button>
         </div>
         <div className="themes-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          {themes.map((theme) => {
+          {/* 正常主题：一行两个 */}
+          {themes.filter(t => t.id !== 'coming_soon').map((theme) => {
             const unlocked = isThemeUnlocked(theme.id);
             const completed = isThemeCompleted(theme.id);
-            const isComingSoon = theme.id === 'coming_soon';
 
             return (
               <div
                 key={theme.id}
-                className={`theme-card ${!unlocked && !isComingSoon ? 'locked' : ''}`}
-                onClick={() => !isComingSoon && handleSelectTheme(theme)}
+                className={`theme-card ${!unlocked ? 'locked' : ''}`}
+                onClick={() => handleSelectTheme(theme)}
                 style={{
                   padding: 20,
-                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : isComingSoon ? '#f5f5f5' : 'white',
-                  cursor: isComingSoon ? 'default' : unlocked ? 'pointer' : 'not-allowed',
-                  opacity: isComingSoon ? 0.7 : 1,
+                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'white',
+                  cursor: unlocked ? 'pointer' : 'not-allowed',
                 }}
               >
                 <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
@@ -147,12 +146,37 @@ export function Home() {
                   {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
                 </div>
                 {completed && <span className="theme-status">✓</span>}
-                {!unlocked && !isComingSoon && <span className="theme-status locked">🔒</span>}
-                {isComingSoon && <span className="theme-status" style={{ color: '#9E9E9E' }}>🔜</span>}
+                {!unlocked && <span className="theme-status locked">🔒</span>}
               </div>
             );
           })}
         </div>
+
+        {/* 更多主题敬请期待：独占一行 */}
+        {themes.some(t => t.id === 'coming_soon') && (
+          <div style={{ marginTop: 16 }}>
+            {themes.filter(t => t.id === 'coming_soon').map((theme) => (
+              <div
+                key={theme.id}
+                style={{
+                  padding: 20,
+                  background: '#f5f5f5',
+                  borderRadius: 12,
+                  cursor: 'default',
+                  opacity: 0.7,
+                  textAlign: 'center',
+                }}
+              >
+                <span className="theme-icon" style={{ fontSize: 48 }}>{theme.icon}</span>
+                <div className="theme-info">
+                  <div className="theme-name" style={{ fontSize: 20 }}>{theme.name}</div>
+                  {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
+                </div>
+                <span style={{ color: '#9E9E9E' }}>🔜</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
 
