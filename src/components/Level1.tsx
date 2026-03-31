@@ -70,6 +70,7 @@ export function Level1() {
   const [imageError, setImageError] = useState(false);
   const [recognizedText, setRecognizedText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   // 跟踪每个词的学习状态和分数
   const [wordScores, setWordScores] = useState<Record<string, number>>({});
   
@@ -105,7 +106,6 @@ export function Level1() {
 
   const handleRecord = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('您的浏览器不支持录音');
       return;
     }
 
@@ -136,7 +136,6 @@ export function Level1() {
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording:', err);
-      alert('无法访问麦克风，请检查权限设置');
     }
   };
 
@@ -145,7 +144,6 @@ export function Level1() {
     const stream = streamRef.current;
     
     if (!recorder || recorder.state === 'inactive') {
-      alert('录音未开始');
       return;
     }
 
@@ -159,12 +157,13 @@ export function Level1() {
         // 检查是否有音频数据
         if (chunksRef.current.length === 0) {
           setIsRecording(false);
-          alert('录音失败，请重试');
           resolve();
           return;
         }
         
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        setIsRecording(false);
+        setIsProcessing(true);
         
         // 转换为 base64
         const reader = new FileReader();
@@ -201,19 +200,17 @@ export function Level1() {
             fallbackToBrowserASR();
           }
           
-          setIsRecording(false);
+          setIsProcessing(false);
           resolve();
         };
         reader.onerror = () => {
-          setIsRecording(false);
-          alert('录音转换失败');
+          setIsProcessing(false);
           resolve();
         };
         reader.readAsDataURL(blob);
       };
       
       recorder.stop();
-      setIsRecording(false);
     });
   };
 
@@ -221,7 +218,7 @@ export function Level1() {
   const fallbackToBrowserASR = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('您的浏览器不支持语音识别');
+      setIsProcessing(false);
       return;
     }
 
@@ -240,6 +237,7 @@ export function Level1() {
         ...prev,
         [currentWord.id]: scoreResult
       }));
+      setIsProcessing(false);
     };
     recognition.onerror = () => {
       setScore(60);
@@ -248,6 +246,7 @@ export function Level1() {
         ...prev,
         [currentWord.id]: 60
       }));
+      setIsProcessing(false);
     };
 
     recognition.start();
@@ -402,23 +401,31 @@ export function Level1() {
             </button>
 
             <button
-              onClick={isRecording ? handleStopRecording : handleRecord}
+              onClick={() => {
+                if (isProcessing) return;
+                if (isRecording) {
+                  handleStopRecording();
+                } else {
+                  handleRecord();
+                }
+              }}
+              disabled={isProcessing}
               style={{
                 padding: '12px 16px',
                 fontSize: 14,
-                background: isRecording ? '#F44336' : '#2196F3',
+                background: isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3'),
                 color: 'white',
                 border: 'none',
                 borderRadius: 10,
-                cursor: 'pointer',
+                cursor: isProcessing ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 4,
               }}
             >
-              <span style={{ fontSize: 20 }}>{isRecording ? '⏹️' : '🎤'}</span>
-              <span>{isRecording ? '停止' : '跟读'}</span>
+              <span style={{ fontSize: 20 }}>{isProcessing ? '⏳' : (isRecording ? '⏹️' : '🎤')}</span>
+              <span>{isProcessing ? '处理中' : (isRecording ? '停止' : '跟读')}</span>
             </button>
           </div>
 
