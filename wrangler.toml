@@ -1,3 +1,15 @@
 name = "hanzimatch"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist"
+
+# Cloudflare Pages Functions
+# 函数文件位于 functions/api.js
+
+[env.production]
+name = "hanzimatch-prod"
+
+# 生产环境 secrets（部署时设置）
+# npx wrangler secret put TENCENTCLOUD_SECRET_ID
+# npx wrangler secret put TENCENTCLOUD_SECRET_KEY
+# npx wrangler secret put PAYPAL_SECRET
+# npx wrangler secret put PAYPAL_WEBHOOK_ID
