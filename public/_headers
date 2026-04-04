@@ -21,3 +21,7 @@ Content-Security-Policy: frame-ancestors https://www.paypal.com https://www.sand
 
 *.svg
   Cache-Control: no-cache, no-store, must-revalidate
+
+*.xml
+  Content-Type: application/xml
+  Cache-Control: max-age=86400
