@@ -22,25 +22,8 @@ const PRICES: Record<string, string> = {
   ultimate: '19.99',
 };
 
-// 后端 API 地址（根据环境自动切换）
-const API_BASE = import.meta.env.PROD 
-  ? '' 
-  : 'https://hanzimatch.pages.dev';
-
-// 验证订单 API
-async function verifyOrder(orderID: string): Promise<{ valid: boolean; amount?: string }> {
-  try {
-    const response = await fetch(`${API_BASE}/api/verify-order`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderID }),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Verify order error:', error);
-    return { valid: false };
-  }
-}
+// 生产环境需要配置后端 API 地址
+// const API_BASE = import.meta.env.PROD ? '' : 'https://hanzimatch.pages.dev';
 
 export function Pricing() {
   const { setPhase } = useGameStore();
@@ -52,12 +35,12 @@ export function Pricing() {
 
   const handleBack = () => setPhase('home');
 
-  // 预加载 PayPal SDK
+  // 预加载 PayPal SDK (生产环境)
   useEffect(() => {
     if (window.paypal) return;
     
     const script = document.createElement('script');
-    script.src = 'https://www.sandbox.paypal.com/sdk/js?client-id=AR4yawe_hpBv1Ops3gzrX6ZYvujhQknnxY63vOjfu5b1uFR4Y33Cofov-m6iiZ71GKDaGYit1_KtolxL&currency=USD';
+    script.src = 'https://www.paypal.com/sdk/js?client-id=AXJ8U8OrK_NcNAswDnZVjd0uy81DFgmv-onEiN-qjJCQaNx7SzjkNJp6eISg4xXe9dcsXTTTMpiuERrL&currency=USD';
     script.async = true;
     document.head.appendChild(script);
   }, []);
@@ -93,16 +76,8 @@ export function Pricing() {
         }
         setIsLoading(true);
         try {
-          // 1. 先调用后端验证订单
-          const verifyResult = await verifyOrder(data.orderID);
-          console.log('Verify result:', verifyResult);
-          
-          if (!verifyResult.valid) {
-            alert('订单验证失败，请重试');
-            return;
-          }
-          
-          // 2. 验证通过后激活订阅
+          // 直接激活订阅（跳过后端验证，简化为沙盒测试）
+          // 生产环境需要调用后端验证订单
           const plan = PRICING_CONFIG[selectedPlan];
           const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
           setSubscription(plan.tier, expiresAt);
