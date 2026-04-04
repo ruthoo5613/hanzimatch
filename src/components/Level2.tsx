@@ -225,19 +225,22 @@ export function Level2() {
             <button
               onClick={() => {
                 if (!canUseRecording) {
-                  useGameStore.getState().setPhase('pricing');
+                  // 不跳转页面，而是显示提示
+                  alert('跟读评分功能需要 Pro 以上的订阅版本');
                   return;
                 }
                 handleStartRecord();
               }}
+              disabled={!canUseRecording}
               style={{
                 padding: '16px 32px',
                 fontSize: 18,
-                background: '#4CAF50',
+                background: canUseRecording ? '#4CAF50' : '#BDBDBD',
                 color: 'white',
                 border: 'none',
                 borderRadius: 12,
-                cursor: 'pointer',
+                cursor: canUseRecording ? 'pointer' : 'not-allowed',
+                opacity: canUseRecording ? 1 : 0.6,
               }}
             >
               🎤 跟读句子

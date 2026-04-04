@@ -123,7 +123,8 @@ export function Profile() {
           <div style={{ fontSize: 40 }}>{isPaid ? '⭐' : '🆓'}</div>
         </div>
         
-        {!isPaid && (
+        {/* 免费版显示升级按钮，或非尊享版显示升级按钮 */}
+        {(!isPaid || (tier !== 'ultimate')) && (
           <button 
             onClick={() => setPhase('pricing')}
             style={{
@@ -131,7 +132,7 @@ export function Profile() {
               width: '100%',
               padding: '12px',
               background: 'white',
-              color: '#FF9800',
+              color: isPaid ? '#4CAF50' : '#FF9800',
               border: 'none',
               borderRadius: 8,
               fontSize: 14,
@@ -139,7 +140,7 @@ export function Profile() {
               cursor: 'pointer',
             }}
           >
-            升级到付费版 →
+            {!isPaid ? '升级到付费版 →' : (tier === 'basic' ? '升级到进阶版 →' : '升级到尊享版 →')}
           </button>
         )}
       </div>

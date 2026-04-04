@@ -51,15 +51,35 @@ export function Home() {
 
   return (
     <div className="home-page">
-      {/* 登录状态 */}
+      {/* 右上角：登录 + 升级按钮 */}
       <div style={{ 
         position: 'absolute', 
         top: 16, 
         right: 16, 
         display: 'flex', 
         alignItems: 'center', 
-        gap: 12 
+        gap: 12,
+        zIndex: 10
       }}>
+        {/* 免费用户升级提示 */}
+        {!isSubscribed() && (
+          <div 
+            onClick={handleUpgrade}
+            style={{
+              background: 'linear-gradient(135deg, #FF9800, #FFB74D)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: 20,
+              fontSize: 13,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(255, 152, 0, 0.4)',
+              fontWeight: 500,
+            }}
+          >
+            ⭐ 升级
+          </div>
+        )}
+        
         {isLoading ? (
           <span style={{ fontSize: 14, color: '#757575' }}>加载中...</span>
         ) : isAuthenticated && user ? (
@@ -137,28 +157,6 @@ export function Home() {
         )}
       </div>
 
-      {/* 免费用户升级提示 */}
-      {!isSubscribed() && (
-        <div 
-          onClick={handleUpgrade}
-          style={{
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            background: 'linear-gradient(135deg, #FF9800, #FFB74D)',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: 20,
-            fontSize: 13,
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(255, 152, 0, 0.4)',
-            fontWeight: 500,
-          }}
-        >
-          ⭐ 升级到付费版
-        </div>
-      )}
-
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Easy Chinese</h1>
         <p className="home-subtitle">Learn Chinese the easy way!</p>
@@ -167,7 +165,7 @@ export function Home() {
       {/* 学习模式入口 */}
       <div className="themes-section">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 className="themes-title" style={{ margin: 0 }}>🎮 学习模式</h2>
+          <h2 className="themes-title" style={{ margin: 0 }}>主题列表</h2>
           <button 
             onClick={() => setPhase('guestbook')}
             style={{

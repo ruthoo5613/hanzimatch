@@ -406,7 +406,8 @@ export function Level1() {
               onClick={() => {
                 // 检查订阅权限
                 if (!canUseRecording) {
-                  useGameStore.getState().setPhase('pricing');
+                  // 不跳转页面，而是显示提示
+                  alert('跟读评分功能需要 Pro 以上的订阅版本');
                   return;
                 }
                 if (isProcessing) return;
@@ -416,15 +417,16 @@ export function Level1() {
                   handleRecord();
                 }
               }}
-              disabled={isProcessing}
+              disabled={isProcessing || !canUseRecording}
               style={{
                 padding: '12px 16px',
                 fontSize: 14,
-                background: isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3'),
+                background: !canUseRecording ? '#BDBDBD' : (isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3')),
                 color: 'white',
                 border: 'none',
                 borderRadius: 10,
-                cursor: isProcessing ? 'not-allowed' : 'pointer',
+                cursor: !canUseRecording || isProcessing ? 'not-allowed' : 'pointer',
+                opacity: !canUseRecording ? 0.6 : 1,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',

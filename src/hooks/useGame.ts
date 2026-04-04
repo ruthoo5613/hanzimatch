@@ -101,8 +101,8 @@ export const useGameStore = create<GameStore>()(
       
       isThemeUnlocked: (themeId: string) => {
         const state = get();
-        // v2主题默认解锁测试
-        if (themeId === 'restaurant_v2') return true;
+        // v2主题默认解锁测试 - restaurant_v2, hotel, driving 都默认解锁
+        if (themeId === 'restaurant_v2' || themeId === 'hotel' || themeId === 'driving') return true;
         // 旧版主题逻辑
         if (themeId === 'scenic') return true;
         if (state.unlockedThemes.includes(themeId)) return true;
