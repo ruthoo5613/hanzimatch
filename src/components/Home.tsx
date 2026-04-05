@@ -37,10 +37,6 @@ export function Home() {
     setPhase('profile');
   };
 
-  const handleUpgrade = () => {
-    setPhase('pricing');
-  };
-
   // 检查主题是否解锁
   const checkThemeLocked = (themeId: string) => {
     // 免费用户只有 restaurant_v2 解锁
@@ -51,7 +47,7 @@ export function Home() {
 
   return (
     <div className="home-page">
-      {/* 右上角：登录 + 升级按钮 */}
+      {/* 右上角：登录按钮 */}
       <div style={{ 
         position: 'absolute', 
         top: 16, 
@@ -61,24 +57,6 @@ export function Home() {
         gap: 12,
         zIndex: 10
       }}>
-        {/* 免费用户升级提示 */}
-        {!isSubscribed() && (
-          <div 
-            onClick={handleUpgrade}
-            style={{
-              background: 'linear-gradient(135deg, #FF9800, #FFB74D)',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: 20,
-              fontSize: 13,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(255, 152, 0, 0.4)',
-              fontWeight: 500,
-            }}
-          >
-            ⭐ 升级
-          </div>
-        )}
         
         {isLoading ? (
           <span style={{ fontSize: 14, color: '#757575' }}>加载中...</span>
