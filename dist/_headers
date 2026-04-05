@@ -1,0 +1,35 @@
+/*
+  X-Content-Type-Options: nosniff
+
+# 允许 PayPal iframe
+X-Frame-Options: ALLOW-FROM https://www.paypal.com https://www.sandbox.paypal.com
+
+# 移除可能导致问题的 COP 头部
+# Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+# 使用更宽松的 Content Security Policy
+Content-Security-Policy: frame-ancestors https://www.paypal.com https://www.sandbox.paypal.com;
+
+*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+*.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+*.css
+  Cache-Control: no-cache, no-store, must-revalidate
+
+*.svg
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/sitemap.xml
+  Content-Type: application/xml
+  Cache-Control: max-age=86400
+
+/sitemapIndex.xml
+  Content-Type: application/xml
+  Cache-Control: max-age=86400
+
+/robots.txt
+  Content-Type: text/plain
+  Cache-Control: max-age=86400
