@@ -6,7 +6,7 @@ import type { Theme } from '../types';
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
-  const { isSubscribed, canAccessAllThemes } = useSubscriptionStore();
+  const { canAccessAllThemes } = useSubscriptionStore();
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) {
