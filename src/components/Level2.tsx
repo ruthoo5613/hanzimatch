@@ -98,12 +98,12 @@ export function Level2() {
       clearRecording();
       setTimeout(() => speak(currentSentences[currentIndex + 1].text), 500);
     } else {
-      // 完成第2关，进入第3关
+      // 完成第2关，主题完成
       if (currentTheme) {
         useGameStore.getState().completeLevel(currentTheme.id, 2);
       }
-      setLevel(3);
-      setPhase('level3');
+      // 直接返回主页
+      setPhase('home');
     }
   };
 
