@@ -70,7 +70,7 @@ export function Guestbook() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <button onClick={handleBack} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#333' }}>←</button>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 13, color: '#757575' }}>留言板</div>
+          <div style={{ fontSize: 13, color: '#757575' }}>留言板 Guestbook</div>
           <div style={{ fontSize: 15, fontWeight: 600 }}>Guestbook</div>
         </div>
         <div style={{ width: 40 }}></div>

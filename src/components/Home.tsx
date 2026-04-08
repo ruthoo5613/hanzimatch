@@ -143,7 +143,7 @@ export function Home() {
       {/* 学习模式入口 */}
       <div className="themes-section">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 className="themes-title" style={{ margin: 0 }}>主题列表</h2>
+          <h2 className="themes-title" style={{ margin: 0 }}>主题列表 Themes</h2>
           <button 
             onClick={() => setPhase('guestbook')}
             style={{
@@ -157,7 +157,7 @@ export function Home() {
               cursor: 'pointer',
             }}
           >
-            📝 留言板
+            📝 留言板 Guestbook
           </button>
         </div>
         <div className="themes-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
