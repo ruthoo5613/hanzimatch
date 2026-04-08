@@ -6,7 +6,7 @@ import type { Theme } from '../types';
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
-  const { canAccessAllThemes } = useSubscriptionStore();
+  const { tier } = useSubscriptionStore();
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) {
@@ -41,7 +41,7 @@ export function Home() {
   const checkThemeLocked = (themeId: string) => {
     // 免费用户只有 restaurant_v2 解锁
     if (themeId === 'restaurant_v2') return false;
-    if (canAccessAllThemes) return false;
+    if (tier) return false;
     return true;
   };
 

@@ -23,9 +23,9 @@ export function Profile() {
 
   const getTierName = () => {
     switch (tier) {
-      case 'basic': return '基础版';
-      case 'pro': return '进阶版';
-      case 'ultimate': return '尊享版';
+      
+      case 'pro': return '付费版';
+      
       default: return '免费版';
     }
   };
@@ -124,7 +124,7 @@ export function Profile() {
         </div>
         
         {/* 免费版显示升级按钮，或非尊享版显示升级按钮 */}
-        {(!isPaid || (tier !== 'ultimate')) && (
+        {(!isPaid || (tier === 'free')) && (
           <button 
             onClick={() => setPhase('pricing')}
             style={{
@@ -140,7 +140,7 @@ export function Profile() {
               cursor: 'pointer',
             }}
           >
-            {!isPaid ? '升级到付费版 →' : (tier === 'basic' ? '升级到进阶版 →' : '升级到尊享版 →')}
+            {!isPaid ? '升级到付费版 →' : (tier === 'free' ? '升级到进阶版 →' : '升级到尊享版 →')}
           </button>
         )}
       </div>
@@ -194,8 +194,8 @@ export function Profile() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>AI对话陪练</span>
-            <span style={{ color: tier === 'ultimate' ? '#4CAF50' : '#F44336' }}>
-              {tier === 'ultimate' ? '✓' : '✗'}
+            <span style={{ color: tier === 'pro' ? '#4CAF50' : '#F44336' }}>
+              {tier === 'pro' ? '✓' : '✗'}
             </span>
           </div>
         </div>

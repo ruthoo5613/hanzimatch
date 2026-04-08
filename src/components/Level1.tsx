@@ -89,7 +89,7 @@ function calculateSimilarity(recognized: string, target: string): number {
 export function Level1() {
   const { currentWords, setPhase, completeLevel, setLevel, currentTheme } = useGameStore();
   const { speak } = useSpeech();
-  const { canUseRecording } = useSubscriptionStore();
+  const { tier } = useSubscriptionStore();
   
   // 确保关卡数正确
   useEffect(() => {
@@ -435,7 +435,7 @@ export function Level1() {
             <button
               onClick={() => {
                 // 检查订阅权限
-                if (!canUseRecording) {
+                if (!tier) {
                   // 不跳转页面，而是显示提示
                   alert('跟读评分功能需要 Pro 以上的订阅版本');
                   return;
@@ -447,16 +447,16 @@ export function Level1() {
                   handleRecord();
                 }
               }}
-              disabled={isProcessing || !canUseRecording}
+              disabled={isProcessing || !tier}
               style={{
                 padding: '12px 16px',
                 fontSize: 14,
-                background: !canUseRecording ? '#BDBDBD' : (isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3')),
+                background: !tier ? '#BDBDBD' : (isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3')),
                 color: 'white',
                 border: 'none',
                 borderRadius: 10,
-                cursor: !canUseRecording || isProcessing ? 'not-allowed' : 'pointer',
-                opacity: !canUseRecording ? 0.6 : 1,
+                cursor: !tier || isProcessing ? 'not-allowed' : 'pointer',
+                opacity: !tier ? 0.6 : 1,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',

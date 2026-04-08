@@ -7,7 +7,7 @@ import { callTencentASR, audioBlobToBase64 } from '../hooks/useTencentASR';
 
 export function Level2() {
   const { currentSentences, currentTheme, setPhase, setLevel } = useGameStore();
-  const { canUseRecording } = useSubscriptionStore();
+  const { tier } = useSubscriptionStore(); const isPro = tier === "pro";
   
   // 确保关卡数正确
   useEffect(() => {
@@ -224,23 +224,23 @@ export function Level2() {
           ) : !isRecording ? (
             <button
               onClick={() => {
-                if (!canUseRecording) {
+                if (!isPro) {
                   // 不跳转页面，而是显示提示
                   alert('跟读评分功能需要 Pro 以上的订阅版本');
                   return;
                 }
                 handleStartRecord();
               }}
-              disabled={!canUseRecording}
+              disabled={!isPro}
               style={{
                 padding: '16px 32px',
                 fontSize: 18,
-                background: canUseRecording ? '#4CAF50' : '#BDBDBD',
+                background: isPro ? '#4CAF50' : '#BDBDBD',
                 color: 'white',
                 border: 'none',
                 borderRadius: 12,
-                cursor: canUseRecording ? 'pointer' : 'not-allowed',
-                opacity: canUseRecording ? 1 : 0.6,
+                cursor: isPro ? 'pointer' : 'not-allowed',
+                opacity: isPro ? 1 : 0.6,
               }}
             >
               🎤 跟读句子
