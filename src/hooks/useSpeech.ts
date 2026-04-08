@@ -125,6 +125,9 @@ export function useSpeech() {
     
     if (audioUrl) {
       const audio = new Audio(audioUrl);
+      // 解决手机浏览器自动播放限制
+      audio.volume = 1;
+      audio.muted = false;
       audioRef.current = audio;
       
       audio.onplay = () => setIsSpeaking(true);
