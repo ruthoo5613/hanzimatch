@@ -34,6 +34,7 @@ export function Level3() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 13, color: '#757575' }}>第3关</div>
           <div style={{ fontWeight: 600 }}>情景化学习</div>
+          <div style={{ fontSize: 14, color: '#757575', marginBottom: 20 }}>快来试试你能听懂多少吧！</div>
         </div>
         <div style={{ width: 40 }}></div>
       </div>
