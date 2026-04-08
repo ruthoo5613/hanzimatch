@@ -102,8 +102,8 @@ export function Level2() {
       if (currentTheme) {
         useGameStore.getState().completeLevel(currentTheme.id, 2);
       }
-      // 直接返回主页
-      setPhase('home');
+      // 进入第3关
+      setLevel(3); setPhase('level3');
     }
   };
 
