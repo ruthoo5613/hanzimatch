@@ -16,7 +16,7 @@ declare global {
 }
 
 // TODO: 替换为真实的 PayPal Client ID
-const PAYPAL_CLIENT_ID = "YOUR_PAYPAL_CLIENT_ID";
+const PAYPAL_CLIENT_ID = "AXJ8U8OrK_NcNAswDnZVjd0uy81DFgmv-onEiN-qjJCQaNx7SzjkNJp6eISg4xXe9dcsXTTTMpiuERrL";
 
 export function Pricing() {
   const { setPhase } = useGameStore();
