@@ -81,9 +81,64 @@ export function Level2() {
     setTimeout(async () => {
       if (audioBlob) {
         setIsEvaluating(true);
+        
+        // 浏览器语音识别降级方案
+        const useBrowserASR = () => {
+          const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+          if (!SpeechRecognition) {
+            setScore(70);
+            setShowResult(true);
+            setIsEvaluating(false);
+            return true;
+          }
+
+          const recognition = new SpeechRecognition();
+          recognition.lang = 'zh-CN';
+          recognition.continuous = false;
+          recognition.interimResults = false;
+
+          recognition.onresult = (event: any) => {
+            const text = event.results[0][0].transcript;
+            const recognized = text.replace(/\s/g, '').toLowerCase();
+            const original = currentSentence.text.replace(/\s/g, '').toLowerCase();
+            
+            let matchScore = 0;
+            if (recognized === original) {
+              matchScore = 100;
+            } else if (original.includes(recognized)) {
+              matchScore = 90;
+            } else if (recognized.includes(original)) {
+              matchScore = 85;
+            } else {
+              const distance = levenshteinDistance(recognized, original);
+              const maxLen = Math.max(original.length, recognized.length);
+              matchScore = Math.round((1 - distance / maxLen) * 100);
+            }
+            matchScore = Math.max(50, Math.min(95, matchScore));
+            
+            setScore(matchScore);
+            setShowResult(true);
+            setIsEvaluating(false);
+          };
+          recognition.onerror = () => {
+            setScore(70);
+            setShowResult(true);
+            setIsEvaluating(false);
+          };
+
+          recognition.start();
+          return true;
+        };
+        
         try {
           const base64 = await audioBlobToBase64(audioBlob);
           const result = await callTencentASR(base64);
+          
+          // 检查 ASR 返回是否有效
+          if (!result.text || result.error) {
+            useBrowserASR();
+            return;
+          }
           
           // 改进的评分：比较识别结果与原句
           const recognized = result.text.replace(/\s/g, '').toLowerCase();
@@ -111,8 +166,8 @@ export function Level2() {
           setShowResult(true);
         } catch (err) {
           console.error('Evaluation error:', err);
-          setScore(0);
-          setShowResult(true);
+          // 降级到浏览器语音识别
+          useBrowserASR();
         } finally {
           setIsEvaluating(false);
         }

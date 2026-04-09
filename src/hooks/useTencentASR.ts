@@ -21,6 +21,7 @@ const ASR_SERVER_URL = typeof window !== 'undefined' && window.location.hostname
 export interface ASRResult {
   text: string;
   confidence?: number;
+  error?: string;
 }
 
 export async function callTencentASR(audioBase64: string): Promise<ASRResult> {
