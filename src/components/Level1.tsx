@@ -462,10 +462,9 @@ export function Level1() {
 
             <button
               onClick={() => {
-                // 检查订阅权限
-                if (!tier) {
-                  // 不跳转页面，而是显示提示
-                  alert('跟读评分功能需要 Pro 以上的订阅版本');
+                // 检查订阅权限 - 只有付费版才能使用跟读功能
+                if (tier !== 'pro') {
+                  alert('跟读评分功能仅对付费版开放，请先升级到付费版');
                   return;
                 }
                 if (isProcessing) return;
@@ -475,16 +474,16 @@ export function Level1() {
                   handleRecord();
                 }
               }}
-              disabled={isProcessing || !tier}
+              disabled={isProcessing || tier !== 'pro'}
               style={{
                 padding: '12px 16px',
                 fontSize: 14,
-                background: !tier ? '#BDBDBD' : (isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3')),
+                background: tier !== 'pro' ? '#BDBDBD' : (isRecording ? '#F44336' : (isProcessing ? '#BDBDBD' : '#2196F3')),
                 color: 'white',
                 border: 'none',
                 borderRadius: 10,
-                cursor: !tier || isProcessing ? 'not-allowed' : 'pointer',
-                opacity: !tier ? 0.6 : 1,
+                cursor: tier !== 'pro' || isProcessing ? 'not-allowed' : 'pointer',
+                opacity: tier !== 'pro' ? 0.6 : 1,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',

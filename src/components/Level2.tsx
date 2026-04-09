@@ -310,8 +310,7 @@ export function Level2() {
             <button
               onClick={() => {
                 if (!isPro) {
-                  // 不跳转页面，而是显示提示
-                  alert('跟读评分功能需要 Pro 以上的订阅版本');
+                  alert('跟读评分功能仅对付费版开放，请先升级到付费版');
                   return;
                 }
                 handleStartRecord();
