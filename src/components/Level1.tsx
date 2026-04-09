@@ -63,9 +63,9 @@ function getPinyinArray(word: Word): string[] {
   return word.pinyin.split(' ');
 }
 
-// 简单的相似度计算
+// 改进的相似度计算
 function calculateSimilarity(recognized: string, target: string): number {
-  if (!recognized || !target) return 50;
+  if (!recognized || !target) return 70;
   
   const r = recognized.toLowerCase().replace(/\s/g, '');
   const t = target.toLowerCase().replace(/\s/g, '');
@@ -73,17 +73,45 @@ function calculateSimilarity(recognized: string, target: string): number {
   // 完全匹配
   if (r === t) return 95;
   
-  // 包含关系
-  if (r.includes(t) || t.includes(r)) return 85;
+  // 包含关系 - 完全包含
+  if (r.includes(t)) return 90;
+  if (t.includes(r)) return 85;
   
-  // 逐字匹配
-  let matches = 0;
-  for (const char of t) {
-    if (r.includes(char)) matches++;
+  // 使用编辑距离计算相似度
+  const distance = levenshteinDistance(r, t);
+  const maxLen = Math.max(r.length, t.length);
+  const similarity = 1 - distance / maxLen;
+  
+  // 转换到 50-90 范围
+  return Math.min(90, Math.max(50, Math.round(similarity * 100)));
+}
+
+// 计算编辑距离
+function levenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
   }
   
-  const ratio = matches / Math.max(r.length, t.length);
-  return Math.min(90, Math.max(50, Math.round(ratio * 100)));
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  
+  return matrix[b.length][a.length];
 }
 
 export function Level1() {

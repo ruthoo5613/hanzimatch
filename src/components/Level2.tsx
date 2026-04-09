@@ -5,6 +5,34 @@ import { useRecorder } from '../hooks/useRecorder';
 import { useSubscriptionStore } from '../hooks/useSubscription';
 import { callTencentASR, audioBlobToBase64 } from '../hooks/useTencentASR';
 
+// 计算编辑距离
+function levenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  
+  return matrix[b.length][a.length];
+}
+
 export function Level2() {
   const { currentSentences, currentTheme, setPhase, setLevel } = useGameStore();
   const { tier } = useSubscriptionStore(); const isPro = tier === "pro";
@@ -57,7 +85,7 @@ export function Level2() {
           const base64 = await audioBlobToBase64(audioBlob);
           const result = await callTencentASR(base64);
           
-          // 简单评分：比较识别结果与原句
+          // 改进的评分：比较识别结果与原句
           const recognized = result.text.replace(/\s/g, '').toLowerCase();
           const original = currentSentence.text.replace(/\s/g, '').toLowerCase();
           
@@ -65,17 +93,19 @@ export function Level2() {
           let matchScore = 0;
           if (recognized === original) {
             matchScore = 100;
-          } else if (original.includes(recognized) || recognized.includes(original)) {
-            matchScore = 80;
+          } else if (original.includes(recognized)) {
+            matchScore = 90;
+          } else if (recognized.includes(original)) {
+            matchScore = 85;
           } else {
-            // 逐字匹配计算相似度
-            let same = 0;
+            // 使用编辑距离计算相似度
+            const distance = levenshteinDistance(recognized, original);
             const maxLen = Math.max(original.length, recognized.length);
-            for (let i = 0; i < Math.min(original.length, recognized.length); i++) {
-              if (original[i] === recognized[i]) same++;
-            }
-            matchScore = Math.round((same / maxLen) * 100);
+            matchScore = Math.round((1 - distance / maxLen) * 100);
           }
+          
+          // 确保最低分 50 分
+          matchScore = Math.max(50, Math.min(95, matchScore));
           
           setScore(matchScore);
           setShowResult(true);
