@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useSubscriptionStore } from '../hooks/useSubscription';
 
@@ -21,15 +21,21 @@ const PAYPAL_CLIENT_ID = "AXJ8U8OrK_NcNAswDnZVjd0uy81DFgmv-onEiN-qjJCQaNx7SzjkNJ
 export function Pricing() {
   const { setPhase } = useGameStore();
   const { setSubscription } = useSubscriptionStore();
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
 
   const handleBack = () => {
     setPhase('home');
   };
 
   useEffect(() => {
+    if (window.paypal) {
+      setPaypalLoaded(true);
+      return;
+    }
     const script = document.createElement('script');
     script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
     script.async = true;
+    script.onload = () => setPaypalLoaded(true);
     document.body.appendChild(script);
     return () => {
       try {
@@ -39,7 +45,7 @@ export function Pricing() {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.paypal) {
+    if (paypalLoaded && window.paypal) {
       window.paypal.Buttons({
         style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' },
         createOrder: (_data, actions) => actions.order.create({
@@ -58,7 +64,7 @@ export function Pricing() {
         },
       }).render('#paypal-button-container');
     }
-  }, [setSubscription, setPhase]);
+  }, [paypalLoaded, setSubscription, setPhase]);
 
   const handleSubscribe = (planKey: string) => {
     if (planKey === 'free') {
@@ -97,13 +103,9 @@ export function Pricing() {
           <div style={{ fontSize: 14, color: '#555' }}>✅ 解锁全部主题</div>
           <div style={{ fontSize: 14, color: '#555' }}>✅ 跟读评分功能</div>
           <div style={{ marginTop: 12, fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>推荐</div>
-          <div id="paypal-button-container" style={{ marginTop: 16, minHeight: 45 }}></div>
-          <button 
-            onClick={(e) => { e.stopPropagation(); document.getElementById('paypal-button-container')?.querySelector('button')?.click(); }}
-            style={{ marginTop: 12, width: '100%', padding: '14px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}
-          >
-            立即购买 $9.99/年
-          </button>
+          <div id="paypal-button-container" style={{ marginTop: 16, minHeight: 45 }}>
+            {!paypalLoaded && <div style={{color: '#999', fontSize: 14}}>加载中...</div>}
+          </div>
         </div>
       </div>
 
