@@ -89,7 +89,7 @@ export function Pricing() {
           <div style={{ fontSize: 14, color: '#555' }}>✅ 解锁全部主题</div>
         </div>
 
-        <div style={{ padding: '24px 20px', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderRadius: 16, border: '2px solid #4CAF50', boxShadow: '0 4px 16px rgba(76, 175, 80, 0.2)' }}>
+        <div style={{ padding: '24px 20px', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderRadius: 16, border: '2px solid #4CAF50', boxShadow: '0 4px 16px rgba(76, 175, 80, 0.2)', cursor: 'pointer' }} onClick={() => document.getElementById('paypal-button-container')?.querySelector('button')?.click()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ fontSize: 20, fontWeight: 600 }}>付费版</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: '#4CAF50' }}>$9.99/年</div>
@@ -98,6 +98,12 @@ export function Pricing() {
           <div style={{ fontSize: 14, color: '#555' }}>✅ 跟读评分功能</div>
           <div style={{ marginTop: 12, fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>推荐</div>
           <div id="paypal-button-container" style={{ marginTop: 16, minHeight: 45 }}></div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); document.getElementById('paypal-button-container')?.querySelector('button')?.click(); }}
+            style={{ marginTop: 12, width: '100%', padding: '14px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}
+          >
+            立即购买 $9.99/年
+          </button>
         </div>
       </div>
 
