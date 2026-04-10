@@ -1,11 +1,9 @@
 /*
   X-Content-Type-Options: nosniff
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
 
 # 允许 PayPal iframe
 X-Frame-Options: ALLOW-FROM https://www.paypal.com https://www.sandbox.paypal.com
-
-# 移除可能导致问题的 COP 头部
-# Cross-Origin-Opener-Policy: same-origin-allow-popups
 
 # 使用更宽松的 Content Security Policy
 Content-Security-Policy: frame-ancestors https://www.paypal.com https://www.sandbox.paypal.com;
