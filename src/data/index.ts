@@ -8,3 +8,4 @@ export { supermarketTheme } from './supermarket';
 export { parkTheme } from './park';
 export { subwayTheme } from './subway';
 export { homeTheme } from './home';
+export { citywalkTheme } from './citywalk';
