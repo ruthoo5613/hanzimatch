@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
-import { restaurantThemeV2, hotelTheme, comingSoonTheme, supermarketTheme, parkTheme, subwayTheme, homeTheme, citywalkTheme, cookingTheme, actionsTheme } from '../data';
+import { restaurantThemeV2, hotelTheme, comingSoonTheme, supermarketTheme, parkTheme, subwayTheme, homeTheme, citywalkTheme, cookingTheme, actionsTheme, gymTheme } from '../data';
 
 interface GameStore extends GameState {
   themes: Theme[];
@@ -36,7 +36,7 @@ export const useGameStore = create<GameStore>()(
     (set, get) => ({
       ...initialState,
       // 所有主题列表
-      themes: [restaurantThemeV2, hotelTheme, supermarketTheme, parkTheme, subwayTheme, homeTheme, citywalkTheme, cookingTheme, actionsTheme, comingSoonTheme],
+      themes: [restaurantThemeV2, hotelTheme, supermarketTheme, parkTheme, subwayTheme, homeTheme, citywalkTheme, cookingTheme, actionsTheme, gymTheme, comingSoonTheme],
 
       setTheme: (theme: Theme) => {
         // 获取第1关的词汇（兼容新旧两种数据结构）
@@ -62,7 +62,7 @@ export const useGameStore = create<GameStore>()(
         });
         
         // 使用新版 level1 界面的主题
-        const newThemeIds = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park', 'subway', 'home', 'citywalk', 'cooking', 'actions'];
+        const newThemeIds = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park', 'subway', 'home', 'citywalk', 'cooking', 'actions', 'gym'];
         if (newThemeIds.includes(theme.id) && level1?.type === 'words') {
           set({ phase: 'level1' });
         } else {
@@ -103,7 +103,7 @@ export const useGameStore = create<GameStore>()(
       isThemeUnlocked: (themeId: string) => {
         const state = get();
         // 新主题默认解锁
-        const newThemes = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park', 'subway', 'home', 'citywalk', 'cooking', 'actions'];
+        const newThemes = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park', 'subway', 'home', 'citywalk', 'cooking', 'actions', 'gym'];
         if (newThemes.includes(themeId)) return true;
         // 旧版主题逻辑
         if (themeId === 'scenic') return true;
