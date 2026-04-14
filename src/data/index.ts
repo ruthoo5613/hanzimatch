@@ -6,3 +6,4 @@ export { restaurantThemeV2 } from './restaurantV2';
 export { comingSoonTheme } from './coming';
 export { supermarketTheme } from './supermarket';
 export { parkTheme } from './park';
+export { subwayTheme } from './subway';
