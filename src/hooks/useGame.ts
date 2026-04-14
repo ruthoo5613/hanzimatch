@@ -95,9 +95,11 @@ export const useGameStore = create<GameStore>()(
           currentSentences: sentences,
         });
         
-        // 使用新版 level1 界面的主题
+        // 使用新版 level1 界面的主题：预设主题 + 自定义主题 + 有 words 的主题
         const newThemeIds = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park', 'subway', 'home', 'citywalk', 'cooking', 'actions', 'gym'];
-        if (newThemeIds.includes(theme.id) && level1?.type === 'words') {
+        const isNewTheme = newThemeIds.includes(theme.id) || theme.id.startsWith('custom_') || (level1?.type === 'words');
+        
+        if (isNewTheme) {
           set({ phase: 'level1' });
         } else {
           // 旧主题默认进入 phase1
