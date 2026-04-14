@@ -154,8 +154,45 @@ export function Level1() {
   if (!currentWord || currentWords.length === 0) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
-        <p>No words to learn</p>
-        <button onClick={() => setPhase('home')}>Back</button>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>📚</div>
+        <h2 style={{ marginBottom: 16 }}>No words available</h2>
+        <p style={{ color: '#666', marginBottom: 24 }}>
+          This theme has no vocabulary yet. Please add words to start learning.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button 
+            onClick={() => {
+              // 跳过第1关，直接进入第2关
+              setLevel(2);
+              setPhase('level2');
+            }}
+            style={{
+              padding: '12px 24px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            Skip to Level 2 →
+          </button>
+          <button 
+            onClick={() => setPhase('home')}
+            style={{
+              padding: '12px 24px',
+              background: '#f5f5f5',
+              color: '#666',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     );
   }

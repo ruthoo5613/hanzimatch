@@ -61,8 +61,45 @@ export function Level2() {
   if (!currentSentence || currentSentences.length === 0) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
-        <p>No sentences to practice</p>
-        <button onClick={() => setPhase('home')}>Back</button>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>📝</div>
+        <h2 style={{ marginBottom: 16 }}>No sentences available</h2>
+        <p style={{ color: '#666', marginBottom: 24 }}>
+          This theme has no sentences yet. Please add sentences to practice.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button 
+            onClick={() => {
+              // 跳过第2关，直接进入第3关
+              setLevel(3);
+              setPhase('level3');
+            }}
+            style={{
+              padding: '12px 24px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            Skip to Level 3 →
+          </button>
+          <button 
+            onClick={() => setPhase('home')}
+            style={{
+              padding: '12px 24px',
+              background: '#f5f5f5',
+              color: '#666',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     );
   }
