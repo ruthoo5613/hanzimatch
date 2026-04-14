@@ -5,11 +5,11 @@ import { useSubscriptionStore } from '../hooks/useSubscription';
 import type { Theme, ThemeCategory } from '../types';
 
 const CATEGORIES: { id: ThemeCategory | 'my'; name: string; icon: string }[] = [
-  { id: 'daily', name: '日常生活', icon: '🏠' },
-  { id: 'transport', name: '出行交通', icon: '🚗' },
-  { id: 'food', name: '餐饮美食', icon: '🍜' },
-  { id: 'sport', name: '运动健身', icon: '💪' },
-  { id: 'my', name: '我的主题', icon: '⭐' },
+  { id: 'daily', name: 'Daily Life', icon: '🏠' },
+  { id: 'transport', name: 'Transport', icon: '🚗' },
+  { id: 'food', name: 'Food & Dining', icon: '🍜' },
+  { id: 'sport', name: 'Sports', icon: '💪' },
+  { id: 'my', name: 'My Themes', icon: '⭐' },
 ];
 
 const THEMES_PER_PAGE = 6;
@@ -338,7 +338,7 @@ export function Home() {
               cursor: 'pointer',
             }}
           >
-            📝 留言板
+            📝 Guestbook
           </button>
         </div>
 
@@ -363,13 +363,13 @@ export function Home() {
                   gap: 8,
                 }}
               >
-                ➕ 创建新主题
+                ➕ Create New Theme
               </button>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <input
                   type="text"
-                  placeholder="输入主题名称（如：爬山）"
+                  placeholder="Theme name (e.g., Mountain Climbing)"
                   value={newThemeName}
                   onChange={(e) => setNewThemeName(e.target.value)}
                   style={{
@@ -381,7 +381,7 @@ export function Home() {
                 />
                 <input
                   type="text"
-                  placeholder="粘贴YouTube视频链接"
+                  placeholder="Paste YouTube video link"
                   value={newThemeVideo}
                   onChange={(e) => setNewThemeVideo(e.target.value)}
                   style={{
@@ -405,7 +405,7 @@ export function Home() {
                       cursor: 'pointer',
                     }}
                   >
-                    提交创建
+                    Submit
                   </button>
                   <button
                     onClick={() => {
@@ -423,7 +423,7 @@ export function Home() {
                       cursor: 'pointer',
                     }}
                   >
-                    取消
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -438,7 +438,7 @@ export function Home() {
             color: '#999',
             fontSize: 16 
           }}>
-            {activeCategory === 'my' ? '点击上方创建你的第一个主题吧' : '该分类暂无主题'}
+            {activeCategory === 'my' ? 'Click above to create your first theme' : 'No themes in this category'}
           </div>
         ) : (
           <>
@@ -566,10 +566,10 @@ export function Home() {
       <div className="themes-section" style={{ marginTop: 32 }}>
         <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
           <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>About This App</div>
-          <p style={{ marginBottom: 12 }}>🎯 <strong>可理解输入</strong> - 在真实场景中学习，理解比记忆更重要</p>
-          <p style={{ marginBottom: 12 }}>🏠 <strong>场景化学习</strong> - 餐厅、酒店、开车...覆盖日常生活场景</p>
-          <p style={{ marginBottom: 12 }}>📚 <strong>高频词汇</strong> - 精选日常生活最高频词汇</p>
-          <p style={{ marginBottom: 12 }}>👂 听发音 → 👄 跟读练习 → 📖 情景视频，三步掌握实用表达</p>
+          <p style={{ marginBottom: 12 }}>🎯 <strong>Comprehensible Input</strong> - Learn in real contexts, understanding matters more than memorization</p>
+          <p style={{ marginBottom: 12 }}>🏠 <strong>Scenario-based Learning</strong> - Restaurants, hotels, driving... covering daily life scenarios</p>
+          <p style={{ marginBottom: 12 }}>📚 <strong>High-frequency Words</strong> - Curated most common everyday vocabulary</p>
+          <p style={{ marginBottom: 12 }}>👂 Listen → 👄 Practice → 📖 Watch in context, master practical expressions in 3 steps</p>
         </div>
       </div>
     </div>
