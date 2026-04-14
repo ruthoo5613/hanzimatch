@@ -9,3 +9,4 @@ export { parkTheme } from './park';
 export { subwayTheme } from './subway';
 export { homeTheme } from './home';
 export { citywalkTheme } from './citywalk';
+export { cookingTheme } from './cooking';
