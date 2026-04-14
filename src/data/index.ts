@@ -7,3 +7,4 @@ export { comingSoonTheme } from './coming';
 export { supermarketTheme } from './supermarket';
 export { parkTheme } from './park';
 export { subwayTheme } from './subway';
+export { homeTheme } from './home';
