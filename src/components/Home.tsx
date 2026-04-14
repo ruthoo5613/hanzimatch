@@ -77,71 +77,38 @@ export function Home() {
   // 创建自定义主题
   const handleCreateTheme = () => {
     if (!newThemeName.trim() || !newThemeVideo.trim()) {
-      alert('请填写主题名称和视频链接');
+      alert('Please enter theme name and video link');
       return;
     }
 
     const videoId = extractYouTubeId(newThemeVideo.trim());
     if (!videoId) {
-      alert('请输入有效的YouTube视频链接');
+      alert('Please enter a valid YouTube video link');
       return;
     }
 
     // 生成唯一ID
     const themeId = `custom_${Date.now()}`;
     
-    // 创建自定义主题 - 带placeholder数据
+    // 创建自定义主题 - 完整结构但词汇句子为空，等待用户添加
     const customTheme: Theme = {
       id: themeId,
       name: newThemeName.trim(),
       nameEn: newThemeName.trim(),
       icon: '📖',
       category: 'my',
-      description: '自定义主题',
-      words: [
-        { id: `${themeId}_w1`, char: '学习', pinyin: ['xué', 'xí'], english: 'study' },
-        { id: `${themeId}_w2`, char: '练习', pinyin: ['liàn', 'xí'], english: 'practice' },
-        { id: `${themeId}_w3`, char: '听', pinyin: ['tīng'], english: 'listen' },
-        { id: `${themeId}_w4`, char: '说', pinyin: ['shuō'], english: 'speak' },
-        { id: `${themeId}_w5`, char: '读', pinyin: ['dú'], english: 'read' },
-        { id: `${themeId}_w6`, char: '写', pinyin: ['xiě'], english: 'write' },
-        { id: `${themeId}_w7`, char: '看', pinyin: ['kàn'], english: 'look' },
-        { id: `${themeId}_w8`, char: '理解', pinyin: ['lǐ', 'jiě'], english: 'understand' },
-        { id: `${themeId}_w9`, char: '记住', pinyin: ['jì', 'zhù'], english: 'remember' },
-        { id: `${themeId}_w10`, char: '重复', pinyin: ['chóng', 'fù'], english: 'repeat' },
-      ],
+      description: 'Custom theme',
+      words: [],
       levels: [
         {
           id: 1,
           type: 'words',
-          words: [
-            { id: `${themeId}_w1`, char: '学习', pinyin: ['xué', 'xí'], english: 'study' },
-            { id: `${themeId}_w2`, char: '练习', pinyin: ['liàn', 'xí'], english: 'practice' },
-            { id: `${themeId}_w3`, char: '听', pinyin: ['tīng'], english: 'listen' },
-            { id: `${themeId}_w4`, char: '说', pinyin: ['shuō'], english: 'speak' },
-            { id: `${themeId}_w5`, char: '读', pinyin: ['dú'], english: 'read' },
-            { id: `${themeId}_w6`, char: '写', pinyin: ['xiě'], english: 'write' },
-            { id: `${themeId}_w7`, char: '看', pinyin: ['kàn'], english: 'look' },
-            { id: `${themeId}_w8`, char: '理解', pinyin: ['lǐ', 'jiě'], english: 'understand' },
-            { id: `${themeId}_w9`, char: '记住', pinyin: ['jì', 'zhù'], english: 'remember' },
-            { id: `${themeId}_w10`, char: '重复', pinyin: ['chóng', 'fù'], english: 'repeat' },
-          ],
+          words: [],
         },
         {
           id: 2,
           type: 'sentences',
-          sentences: [
-            { id: `${themeId}_s1`, text: '我在学习中文', pinyin: 'wǒ zài xué xí zhōng wén', english: 'I am learning Chinese' },
-            { id: `${themeId}_s2`, text: '请跟我读', pinyin: 'qǐng gēn wǒ dú', english: 'Please read after me' },
-            { id: `${themeId}_s3`, text: '这个怎么说？', pinyin: 'zhè ge zěn me shuō?', english: 'How do you say this?' },
-            { id: `${themeId}_s4`, text: '我不太懂', pinyin: 'wǒ bù tài dǒng', english: 'I do not quite understand' },
-            { id: `${themeId}_s5`, text: '请再说一遍', pinyin: 'qǐng zài shuō yí biàn', english: 'Please say it again' },
-            { id: `${themeId}_s6`, text: '我记住了', pinyin: 'wǒ jì zhù le', english: 'I remember it' },
-            { id: `${themeId}_s7`, text: '我们要多练习', pinyin: 'wǒ men yào duō liàn xí', english: 'We need to practice more' },
-            { id: `${themeId}_s8`, text: '看视频学习', pinyin: 'kàn shì pín xué xí', english: 'Learn by watching videos' },
-            { id: `${themeId}_s9`, text: '你明白了吗？', pinyin: 'nǐ míng bai le ma?', english: 'Do you understand?' },
-            { id: `${themeId}_s10`, text: '一起加油吧', pinyin: 'yì qǐ jiā yóu ba', english: 'Let us work hard together' },
-          ],
+          sentences: [],
         },
         {
           id: 3,
@@ -160,7 +127,7 @@ export function Home() {
     setNewThemeName('');
     setNewThemeVideo('');
     setIsCreating(false);
-    alert('主题创建成功！');
+    alert('Theme created! You can now add words and sentences to this theme.');
   };
 
   // 合并所有主题（预设 + 自定义）
