@@ -5,22 +5,27 @@ import { useSubscriptionStore } from '../hooks/useSubscription';
 import type { Theme, ThemeCategory } from '../types';
 
 const CATEGORIES: { id: ThemeCategory | 'my'; name: string; icon: string }[] = [
-  { id: 'my', name: '我的主题', icon: '⭐' },
   { id: 'daily', name: '日常生活', icon: '🏠' },
   { id: 'transport', name: '出行交通', icon: '🚗' },
   { id: 'food', name: '餐饮美食', icon: '🍜' },
   { id: 'sport', name: '运动健身', icon: '💪' },
+  { id: 'my', name: '我的主题', icon: '⭐' },
 ];
 
 const THEMES_PER_PAGE = 6;
 
 export function Home() {
-  const { themes, completedLevels, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
+  const { themes, customThemes, addCustomTheme, deleteCustomTheme, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
   const { tier } = useSubscriptionStore();
   
-  const [activeCategory, setActiveCategory] = useState<ThemeCategory | 'my'>('my');
+  const [activeCategory, setActiveCategory] = useState<ThemeCategory | 'my'>('daily');
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // 自定义主题表单状态
+  const [newThemeName, setNewThemeName] = useState('');
+  const [newThemeVideo, setNewThemeVideo] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) {
@@ -56,12 +61,116 @@ export function Home() {
     return true;
   };
 
+  // 从YouTube URL提取视频ID
+  const extractYouTubeId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/shorts\/([^&\n?#]+)/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  // 创建自定义主题
+  const handleCreateTheme = () => {
+    if (!newThemeName.trim() || !newThemeVideo.trim()) {
+      alert('请填写主题名称和视频链接');
+      return;
+    }
+
+    const videoId = extractYouTubeId(newThemeVideo.trim());
+    if (!videoId) {
+      alert('请输入有效的YouTube视频链接');
+      return;
+    }
+
+    // 生成唯一ID
+    const themeId = `custom_${Date.now()}`;
+    
+    // 创建自定义主题 - 带placeholder数据
+    const customTheme: Theme = {
+      id: themeId,
+      name: newThemeName.trim(),
+      nameEn: newThemeName.trim(),
+      icon: '📖',
+      category: 'my',
+      description: '自定义主题',
+      words: [
+        { id: `${themeId}_w1`, char: '学习', pinyin: ['xué', 'xí'], english: 'study' },
+        { id: `${themeId}_w2`, char: '练习', pinyin: ['liàn', 'xí'], english: 'practice' },
+        { id: `${themeId}_w3`, char: '听', pinyin: ['tīng'], english: 'listen' },
+        { id: `${themeId}_w4`, char: '说', pinyin: ['shuō'], english: 'speak' },
+        { id: `${themeId}_w5`, char: '读', pinyin: ['dú'], english: 'read' },
+        { id: `${themeId}_w6`, char: '写', pinyin: ['xiě'], english: 'write' },
+        { id: `${themeId}_w7`, char: '看', pinyin: ['kàn'], english: 'look' },
+        { id: `${themeId}_w8`, char: '理解', pinyin: ['lǐ', 'jiě'], english: 'understand' },
+        { id: `${themeId}_w9`, char: '记住', pinyin: ['jì', 'zhù'], english: 'remember' },
+        { id: `${themeId}_w10`, char: '重复', pinyin: ['chóng', 'fù'], english: 'repeat' },
+      ],
+      levels: [
+        {
+          id: 1,
+          type: 'words',
+          words: [
+            { id: `${themeId}_w1`, char: '学习', pinyin: ['xué', 'xí'], english: 'study' },
+            { id: `${themeId}_w2`, char: '练习', pinyin: ['liàn', 'xí'], english: 'practice' },
+            { id: `${themeId}_w3`, char: '听', pinyin: ['tīng'], english: 'listen' },
+            { id: `${themeId}_w4`, char: '说', pinyin: ['shuō'], english: 'speak' },
+            { id: `${themeId}_w5`, char: '读', pinyin: ['dú'], english: 'read' },
+            { id: `${themeId}_w6`, char: '写', pinyin: ['xiě'], english: 'write' },
+            { id: `${themeId}_w7`, char: '看', pinyin: ['kàn'], english: 'look' },
+            { id: `${themeId}_w8`, char: '理解', pinyin: ['lǐ', 'jiě'], english: 'understand' },
+            { id: `${themeId}_w9`, char: '记住', pinyin: ['jì', 'zhù'], english: 'remember' },
+            { id: `${themeId}_w10`, char: '重复', pinyin: ['chóng', 'fù'], english: 'repeat' },
+          ],
+        },
+        {
+          id: 2,
+          type: 'sentences',
+          sentences: [
+            { id: `${themeId}_s1`, text: '我在学习中文', pinyin: 'wǒ zài xué xí zhōng wén', english: 'I am learning Chinese' },
+            { id: `${themeId}_s2`, text: '请跟我读', pinyin: 'qǐng gēn wǒ dú', english: 'Please read after me' },
+            { id: `${themeId}_s3`, text: '这个怎么说？', pinyin: 'zhè ge zěn me shuō?', english: 'How do you say this?' },
+            { id: `${themeId}_s4`, text: '我不太懂', pinyin: 'wǒ bù tài dǒng', english: 'I do not quite understand' },
+            { id: `${themeId}_s5`, text: '请再说一遍', pinyin: 'qǐng zài shuō yí biàn', english: 'Please say it again' },
+            { id: `${themeId}_s6`, text: '我记住了', pinyin: 'wǒ jì zhù le', english: 'I remember it' },
+            { id: `${themeId}_s7`, text: '我们要多练习', pinyin: 'wǒ men yào duō liàn xí', english: 'We need to practice more' },
+            { id: `${themeId}_s8`, text: '看视频学习', pinyin: 'kàn shì pín xué xí', english: 'Learn by watching videos' },
+            { id: `${themeId}_s9`, text: '你明白了吗？', pinyin: 'nǐ míng bai le ma?', english: 'Do you understand?' },
+            { id: `${themeId}_s10`, text: '一起加油吧', pinyin: 'yì qǐ jiā yóu ba', english: 'Let us work hard together' },
+          ],
+        },
+        {
+          id: 3,
+          type: 'video',
+          video: {
+            id: `v_${themeId}`,
+            videoUrl: `https://www.youtube.com/embed/${videoId}`,
+            transcript: '',
+            prompts: [],
+          },
+        },
+      ],
+    };
+
+    addCustomTheme(customTheme);
+    setNewThemeName('');
+    setNewThemeVideo('');
+    setIsCreating(false);
+    alert('主题创建成功！');
+  };
+
+  // 合并所有主题（预设 + 自定义）
+  const allThemes = [...themes.filter(t => t.id !== 'coming_soon'), ...customThemes];
+
   // 过滤主题
-  const filteredThemes = themes.filter(t => {
-    if (t.id === 'coming_soon') return false;
+  const filteredThemes = allThemes.filter(t => {
     if (activeCategory === 'my') {
-      // 我的主题：显示学过的或已完成的
-      return completedLevels.some(c => c.themeId === t.id);
+      // 我的主题：只显示自定义主题
+      return customThemes.some(ct => ct.id === t.id);
     }
     return t.category === activeCategory;
   });
@@ -74,7 +183,7 @@ export function Home() {
   );
 
   // 切换分类时重置页码
-  const handleCategoryChange = (category: ThemeCategory) => {
+  const handleCategoryChange = (category: ThemeCategory | 'my') => {
     setActiveCategory(category);
     setCurrentPage(1);
   };
@@ -233,6 +342,95 @@ export function Home() {
           </button>
         </div>
 
+        {/* 我的主题 - 创建表单 */}
+        {activeCategory === 'my' && (
+          <div style={{ marginBottom: 24, padding: 16, background: '#f8f9fa', borderRadius: 12 }}>
+            {!isCreating ? (
+              <button
+                onClick={() => setIsCreating(true)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontSize: 16,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                }}
+              >
+                ➕ 创建新主题
+              </button>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <input
+                  type="text"
+                  placeholder="输入主题名称（如：爬山）"
+                  value={newThemeName}
+                  onChange={(e) => setNewThemeName(e.target.value)}
+                  style={{
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: 8,
+                    fontSize: 14,
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="粘贴YouTube视频链接"
+                  value={newThemeVideo}
+                  onChange={(e) => setNewThemeVideo(e.target.value)}
+                  style={{
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: 8,
+                    fontSize: 14,
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={handleCreateTheme}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#2196F3',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: 14,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    提交创建
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCreating(false);
+                      setNewThemeName('');
+                      setNewThemeVideo('');
+                    }}
+                    style={{
+                      padding: '12px 20px',
+                      background: '#f5f5f5',
+                      color: '#666',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontSize: 14,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {paginatedThemes.length === 0 ? (
           <div style={{ 
             textAlign: 'center', 
@@ -240,7 +438,7 @@ export function Home() {
             color: '#999',
             fontSize: 16 
           }}>
-            该分类暂无主题
+            {activeCategory === 'my' ? '点击上方创建你的第一个主题吧' : '该分类暂无主题'}
           </div>
         ) : (
           <>
@@ -248,15 +446,15 @@ export function Home() {
               {paginatedThemes.map((theme) => {
                 const completed = isThemeCompleted(theme.id);
                 const isLocked = checkThemeLocked(theme.id);
+                const isCustom = customThemes.some(ct => ct.id === theme.id);
 
                 return (
                   <div
                     key={theme.id}
-                    onClick={() => handleSelectTheme(theme)}
                     style={{
                       padding: 20,
                       background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : (isLocked ? '#f5f5f5' : 'white'),
-                      cursor: 'pointer',
+                      cursor: isLocked ? 'default' : 'pointer',
                       minHeight: 80,
                       display: 'flex',
                       alignItems: 'center',
@@ -264,9 +462,38 @@ export function Home() {
                       borderRadius: 16,
                       boxShadow: isLocked ? 'none' : '0 2px 8px rgba(0,0,0,0.08)',
                       opacity: isLocked ? 0.6 : 1,
+                      position: 'relative',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {/* 删除按钮（仅自定义主题显示） */}
+                    {isCustom && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('确定删除这个主题吗？')) {
+                            deleteCustomTheme(theme.id);
+                          }
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          background: 'transparent',
+                          border: 'none',
+                          fontSize: 16,
+                          cursor: 'pointer',
+                          opacity: 0.5,
+                        }}
+                        title="删除主题"
+                      >
+                        🗑️
+                      </button>
+                    )}
+                    
+                    <div 
+                      onClick={() => !isLocked && handleSelectTheme(theme)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}
+                    >
                       <span style={{ fontSize: 40 }}>{theme.icon}</span>
                       <div>
                         <div style={{ fontSize: 18, fontWeight: 600 }}>{theme.name}</div>
@@ -332,33 +559,6 @@ export function Home() {
               </div>
             )}
           </>
-        )}
-
-        {/* 更多主题敬请期待 */}
-        {themes.some(t => t.id === 'coming_soon') && activeCategory === 'my' && (
-          <div style={{ marginTop: 24 }}>
-            {themes.filter(t => t.id === 'coming_soon').map((theme) => (
-              <div
-                key={theme.id}
-                style={{
-                  padding: '12px 20px',
-                  background: '#f5f5f5',
-                  borderRadius: 12,
-                  cursor: 'default',
-                  opacity: 0.7,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                }}
-              >
-                <span style={{ fontSize: 24 }}>{theme.icon}</span>
-                <div style={{ fontSize: 18, color: '#666' }}>{theme.name}</div>
-                {theme.nameEn && <div style={{ fontSize: 14, color: '#9E9E9E' }}>{theme.nameEn}</div>}
-                <span style={{ color: '#9E9E9E' }}>🔜</span>
-              </div>
-            ))}
-          </div>
         )}
       </div>
 

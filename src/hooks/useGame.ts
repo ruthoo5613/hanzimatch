@@ -1,10 +1,37 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
-import { restaurantThemeV2, hotelTheme, comingSoonTheme, supermarketTheme, parkTheme, subwayTheme, homeTheme, citywalkTheme, cookingTheme, actionsTheme, gymTheme } from '../data';
+import { 
+  restaurantThemeV2, 
+  hotelTheme, 
+  comingSoonTheme, 
+  supermarketTheme, 
+  parkTheme, 
+  subwayTheme, 
+  homeTheme, 
+  citywalkTheme, 
+  cookingTheme, 
+  actionsTheme, 
+  gymTheme 
+} from '../data';
+
+const DEFAULT_THEMES = [
+  restaurantThemeV2, 
+  hotelTheme, 
+  supermarketTheme, 
+  parkTheme, 
+  subwayTheme, 
+  homeTheme, 
+  citywalkTheme, 
+  cookingTheme, 
+  actionsTheme, 
+  gymTheme, 
+  comingSoonTheme
+];
 
 interface GameStore extends GameState {
   themes: Theme[];
+  customThemes: Theme[];
   currentWords: Word[];       // 当前主题的词汇
   currentSentences: Sentence[]; // 当前主题的句子
   setTheme: (theme: Theme) => void;
@@ -17,9 +44,11 @@ interface GameStore extends GameState {
   isThemeUnlocked: (themeId: string) => boolean;
   isLevelCompleted: (themeId: string, levelId: number) => boolean;
   isThemeCompleted: (themeId: string) => boolean;
+  addCustomTheme: (theme: Theme) => void;
+  deleteCustomTheme: (themeId: string) => void;
 }
 
-const initialState: GameState = {
+const initialState: GameState & { themes: Theme[] } = {
   currentTheme: null,
   currentLevel: 1,
   phase: 'home',
@@ -29,14 +58,19 @@ const initialState: GameState = {
   completedLevels: [],
   currentWords: [],
   currentSentences: [],
+  customThemes: [],
+  themes: DEFAULT_THEMES,
 };
 
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-      // 所有主题列表
-      themes: [restaurantThemeV2, hotelTheme, supermarketTheme, parkTheme, subwayTheme, homeTheme, citywalkTheme, cookingTheme, actionsTheme, gymTheme, comingSoonTheme],
+
+      getAllThemes: () => {
+        const { themes: defaultThemes, customThemes } = get();
+        return [...defaultThemes.filter(t => t.id !== 'coming_soon'), ...customThemes];
+      },
 
       setTheme: (theme: Theme) => {
         // 获取第1关的词汇（兼容新旧两种数据结构）
@@ -105,6 +139,8 @@ export const useGameStore = create<GameStore>()(
         // 新主题默认解锁
         const newThemes = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park', 'subway', 'home', 'citywalk', 'cooking', 'actions', 'gym'];
         if (newThemes.includes(themeId)) return true;
+        // 自定义主题默认解锁
+        if (state.customThemes.some(t => t.id === themeId)) return true;
         // 旧版主题逻辑
         if (themeId === 'scenic') return true;
         if (state.unlockedThemes.includes(themeId)) return true;
@@ -124,6 +160,14 @@ export const useGameStore = create<GameStore>()(
       isThemeCompleted: (themeId: string) => {
         return get().completedLevels.some(c => c.themeId === themeId && c.levelId === 3);
       },
+
+      addCustomTheme: (theme: Theme) => set((state) => ({
+        customThemes: [...state.customThemes, theme]
+      })),
+
+      deleteCustomTheme: (themeId: string) => set((state) => ({
+        customThemes: state.customThemes.filter(t => t.id !== themeId)
+      })),
     }),
     {
       name: 'chinese-match-storage',
@@ -132,7 +176,16 @@ export const useGameStore = create<GameStore>()(
         learnedWords: state.learnedWords,
         unlockedThemes: state.unlockedThemes,
         completedLevels: state.completedLevels,
+        customThemes: state.customThemes,
+        themes: state.themes,
       }),
     }
   )
 );
+
+// 获取所有主题的辅助函数
+export const useAllThemes = () => {
+  const defaultThemes = useGameStore(state => state.themes);
+  const customThemes = useGameStore(state => state.customThemes);
+  return [...defaultThemes.filter(t => t.id !== 'coming_soon'), ...customThemes];
+};

@@ -65,4 +65,5 @@ export interface GameState {
   completedLevels: { themeId: string; levelId: number }[];
   currentWords: Word[];       // 当前主题的词
   currentSentences: Sentence[]; // 当前主题的句子
+  customThemes: Theme[];      // 用户自定义主题
 }
