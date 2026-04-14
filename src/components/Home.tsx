@@ -4,8 +4,8 @@ import { useAuthStore } from '../hooks/useAuth';
 import { useSubscriptionStore } from '../hooks/useSubscription';
 import type { Theme, ThemeCategory } from '../types';
 
-const CATEGORIES: { id: ThemeCategory | 'all'; name: string; icon: string }[] = [
-  { id: 'all', name: '全部', icon: '📚' },
+const CATEGORIES: { id: ThemeCategory | 'my'; name: string; icon: string }[] = [
+  { id: 'my', name: '我的主题', icon: '⭐' },
   { id: 'daily', name: '日常生活', icon: '🏠' },
   { id: 'transport', name: '出行交通', icon: '🚗' },
   { id: 'food', name: '餐饮美食', icon: '🍜' },
@@ -15,11 +15,11 @@ const CATEGORIES: { id: ThemeCategory | 'all'; name: string; icon: string }[] = 
 const THEMES_PER_PAGE = 6;
 
 export function Home() {
-  const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
+  const { themes, completedLevels, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
   const { tier } = useSubscriptionStore();
   
-  const [activeCategory, setActiveCategory] = useState<ThemeCategory | 'all'>('all');
+  const [activeCategory, setActiveCategory] = useState<ThemeCategory | 'my'>('my');
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleSelectTheme = (theme: Theme) => {
@@ -57,10 +57,14 @@ export function Home() {
   };
 
   // 过滤主题
-  const filteredThemes = themes.filter(t => 
-    t.id !== 'coming_soon' && 
-    (activeCategory === 'all' || t.category === activeCategory)
-  );
+  const filteredThemes = themes.filter(t => {
+    if (t.id === 'coming_soon') return false;
+    if (activeCategory === 'my') {
+      // 我的主题：显示学过的或已完成的
+      return completedLevels.some(c => c.themeId === t.id);
+    }
+    return t.category === activeCategory;
+  });
 
   // 分页
   const totalPages = Math.ceil(filteredThemes.length / THEMES_PER_PAGE);
@@ -70,7 +74,7 @@ export function Home() {
   );
 
   // 切换分类时重置页码
-  const handleCategoryChange = (category: ThemeCategory | 'all') => {
+  const handleCategoryChange = (category: ThemeCategory) => {
     setActiveCategory(category);
     setCurrentPage(1);
   };
@@ -331,7 +335,7 @@ export function Home() {
         )}
 
         {/* 更多主题敬请期待 */}
-        {themes.some(t => t.id === 'coming_soon') && activeCategory === 'all' && (
+        {themes.some(t => t.id === 'coming_soon') && activeCategory === 'my' && (
           <div style={{ marginTop: 24 }}>
             {themes.filter(t => t.id === 'coming_soon').map((theme) => (
               <div
