@@ -5,6 +5,7 @@ export const subwayTheme: Theme = {
   name: '乘坐地铁',
   nameEn: 'Subway',
   icon: '🚇',
+  category: 'transport',
   description: '学习乘坐地铁相关的词汇和句子',
   words: [
     { id: 'sub_1', char: '地铁', pinyin: ['dì', 'tiě'], english: 'subway/metro' },

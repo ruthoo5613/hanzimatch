@@ -5,6 +5,7 @@ export const parkTheme: Theme = {
   name: '公园散步',
   nameEn: 'Park Walk',
   icon: '🌳',
+  category: 'daily',
   description: '学习公园散步相关的词汇和句子',
   words: [
     { id: 'p_1', char: '公园', pinyin: ['gōng', 'yuán'], english: 'park' },

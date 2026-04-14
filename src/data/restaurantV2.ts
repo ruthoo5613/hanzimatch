@@ -5,6 +5,7 @@ export const restaurantThemeV2: Theme = {
   name: '餐厅吃饭',
   nameEn: 'Restaurant',
   icon: '🍜',
+  category: 'food',
   description: '学习在餐厅吃饭时常用的词汇和句子',
   words: [
     { id: 'r_1', char: '桌子', pinyin: ['zhuō', 'zi'], english: 'table' },

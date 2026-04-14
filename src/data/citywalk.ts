@@ -5,6 +5,7 @@ export const citywalkTheme: Theme = {
   name: 'Citywalk',
   nameEn: 'City Walk',
   icon: '🚶',
+  category: 'transport',
   description: '学习城市漫步相关的词汇和句子',
   words: [
     { id: 'cw_1', char: '城市', pinyin: ['chéng', 'shì'], english: 'city' },

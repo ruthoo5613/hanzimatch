@@ -5,6 +5,7 @@ export const hotelTheme: Theme = {
   name: '酒店住宿',
   nameEn: 'Hotel',
   icon: '🏨',
+  category: 'food',
   description: '学习酒店入住时常用的词汇和句子',
   words: [
     { id: 'h_1', char: '酒店', pinyin: ['jiǔ', 'diàn'], english: 'hotel' },

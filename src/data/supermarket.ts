@@ -5,6 +5,7 @@ export const supermarketTheme: Theme = {
   name: '超市购物',
   nameEn: 'Supermarket Shopping',
   icon: '🛒',
+  category: 'daily',
   description: '学习超市购物相关的词汇和句子',
   words: [
     { id: 's_1', char: '超市', pinyin: ['chāo', 'shì'], english: 'supermarket' },

@@ -5,6 +5,7 @@ export const cookingTheme: Theme = {
   name: '做饭',
   nameEn: 'Cooking',
   icon: '🍳',
+  category: 'daily',
   description: '学习做饭相关的词汇和句子',
   words: [
     { id: 'cook_1', char: '厨房', pinyin: ['chú', 'fáng'], english: 'kitchen' },

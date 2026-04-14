@@ -5,6 +5,7 @@ export const homeTheme: Theme = {
   name: '家居',
   nameEn: 'Home',
   icon: '🏠',
+  category: 'daily',
   description: '学习家居相关的词汇和句子',
   words: [
     { id: 'h_1', char: '家', pinyin: ['jiā'], english: 'home' },

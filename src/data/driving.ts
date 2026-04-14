@@ -5,6 +5,7 @@ export const drivingTheme: Theme = {
   name: '开车',
   nameEn: 'Driving',
   icon: '🚗',
+  category: 'transport',
   description: '学习开车相关的词汇和句子',
   words: [
     { id: 'd_1', char: '汽车', pinyin: ['qì', 'chē'], english: 'car' },

@@ -5,6 +5,7 @@ export const gymTheme: Theme = {
   name: '健身房锻炼',
   nameEn: 'Gym Workout',
   icon: '💪',
+  category: 'sport',
   description: '学习健身房锻炼相关的词汇和句子',
   words: [
     { id: 'gym_1', char: '健身房', pinyin: ['jiàn', 'shēn', 'fáng'], english: 'gym' },

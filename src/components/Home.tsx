@@ -1,16 +1,29 @@
+import { useState } from 'react';
 import { useGameStore } from '../hooks/useGame';
 import { useAuthStore } from '../hooks/useAuth';
 import { useSubscriptionStore } from '../hooks/useSubscription';
-import type { Theme } from '../types';
+import type { Theme, ThemeCategory } from '../types';
+
+const CATEGORIES: { id: ThemeCategory | 'all'; name: string; icon: string }[] = [
+  { id: 'all', name: '全部', icon: '📚' },
+  { id: 'daily', name: '日常生活', icon: '🏠' },
+  { id: 'transport', name: '出行交通', icon: '🚗' },
+  { id: 'food', name: '餐饮美食', icon: '🍜' },
+  { id: 'sport', name: '运动健身', icon: '💪' },
+];
+
+const THEMES_PER_PAGE = 6;
 
 export function Home() {
   const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
   const { tier } = useSubscriptionStore();
+  
+  const [activeCategory, setActiveCategory] = useState<ThemeCategory | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) {
-      // 未解锁，提示升级
       setPhase('pricing');
       return;
     }
@@ -37,12 +50,29 @@ export function Home() {
     setPhase('profile');
   };
 
-  // 检查主题是否解锁
   const checkThemeLocked = (themeId: string) => {
-    // 免费用户只有 restaurant_v2 解锁
     if (themeId === 'restaurant_v2') return false;
     if (tier) return false;
     return true;
+  };
+
+  // 过滤主题
+  const filteredThemes = themes.filter(t => 
+    t.id !== 'coming_soon' && 
+    (activeCategory === 'all' || t.category === activeCategory)
+  );
+
+  // 分页
+  const totalPages = Math.ceil(filteredThemes.length / THEMES_PER_PAGE);
+  const paginatedThemes = filteredThemes.slice(
+    (currentPage - 1) * THEMES_PER_PAGE,
+    currentPage * THEMES_PER_PAGE
+  );
+
+  // 切换分类时重置页码
+  const handleCategoryChange = (category: ThemeCategory | 'all') => {
+    setActiveCategory(category);
+    setCurrentPage(1);
   };
 
   return (
@@ -135,15 +165,53 @@ export function Home() {
         )}
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <h1 className="home-title" style={{ fontSize: 36, marginBottom: 8 }}>Easy Chinese</h1>
         <p className="home-subtitle">Learn Chinese the easy way!</p>
+      </div>
+
+      {/* 分类标签 */}
+      <div style={{ 
+        display: 'flex', 
+        gap: 8, 
+        justifyContent: 'center', 
+        marginBottom: 24,
+        flexWrap: 'wrap',
+        padding: '0 16px'
+      }}>
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => handleCategoryChange(cat.id)}
+            style={{
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: 20,
+              background: activeCategory === cat.id ? '#2196F3' : '#f5f5f5',
+              color: activeCategory === cat.id ? 'white' : '#666',
+              fontSize: 14,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'all 0.2s',
+            }}
+          >
+            <span>{cat.icon}</span>
+            <span>{cat.name}</span>
+          </button>
+        ))}
       </div>
 
       {/* 学习模式入口 */}
       <div className="themes-section">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 className="themes-title" style={{ margin: 0 }}>主题列表 Themes</h2>
+          <h2 className="themes-title" style={{ margin: 0 }}>
+            {CATEGORIES.find(c => c.id === activeCategory)?.name || '主题列表'} 
+            <span style={{ fontSize: 14, fontWeight: 400, color: '#999', marginLeft: 8 }}>
+              ({filteredThemes.length}个)
+            </span>
+          </h2>
           <button 
             onClick={() => setPhase('guestbook')}
             style={{
@@ -157,51 +225,114 @@ export function Home() {
               cursor: 'pointer',
             }}
           >
-            📝 留言板 Guestbook
+            📝 留言板
           </button>
         </div>
-        <div className="themes-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          {/* 正常主题：一行两个 */}
-          {themes.filter(t => t.id !== 'coming_soon').map((theme) => {
-            const completed = isThemeCompleted(theme.id);
-            const isLocked = checkThemeLocked(theme.id);
 
-            return (
-              <div
-                key={theme.id}
-                onClick={() => handleSelectTheme(theme)}
-                style={{
-                  padding: 20,
-                  background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : (isLocked ? '#f5f5f5' : 'white'),
-                  cursor: 'pointer',
-                  minHeight: 80,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  borderRadius: 16,
-                  boxShadow: isLocked ? 'none' : '0 2px 8px rgba(0,0,0,0.08)',
-                  opacity: isLocked ? 0.6 : 1,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 40 }}>{theme.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 18, fontWeight: 600 }}>{theme.name}</div>
-                    {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
+        {paginatedThemes.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: 40, 
+            color: '#999',
+            fontSize: 16 
+          }}>
+            该分类暂无主题
+          </div>
+        ) : (
+          <>
+            <div className="themes-list" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {paginatedThemes.map((theme) => {
+                const completed = isThemeCompleted(theme.id);
+                const isLocked = checkThemeLocked(theme.id);
+
+                return (
+                  <div
+                    key={theme.id}
+                    onClick={() => handleSelectTheme(theme)}
+                    style={{
+                      padding: 20,
+                      background: completed ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : (isLocked ? '#f5f5f5' : 'white'),
+                      cursor: 'pointer',
+                      minHeight: 80,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderRadius: 16,
+                      boxShadow: isLocked ? 'none' : '0 2px 8px rgba(0,0,0,0.08)',
+                      opacity: isLocked ? 0.6 : 1,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 40 }}>{theme.icon}</span>
+                      <div>
+                        <div style={{ fontSize: 18, fontWeight: 600 }}>{theme.name}</div>
+                        {theme.nameEn && <div style={{ fontSize: 12, color: '#9E9E9E' }}>{theme.nameEn}</div>}
+                      </div>
+                    </div>
+                    <div>
+                      {completed && <span>✓</span>}
+                      {isLocked && <span style={{ color: '#FF9800' }}>🔒</span>}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  {completed && <span>✓</span>}
-                  {isLocked && <span style={{ color: '#FF9800' }}>🔒</span>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
 
-        {/* 更多主题敬请期待：独占一行 */}
-        {themes.some(t => t.id === 'coming_soon') && (
-          <div style={{ marginTop: 16 }}>
+            {/* 分页 */}
+            {totalPages > 1 && (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                gap: 8, 
+                marginTop: 24 
+              }}>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    padding: '8px 16px',
+                    border: 'none',
+                    borderRadius: 8,
+                    background: currentPage === 1 ? '#f5f5f5' : '#2196F3',
+                    color: currentPage === 1 ? '#999' : 'white',
+                    cursor: currentPage === 1 ? 'default' : 'pointer',
+                    fontSize: 14,
+                  }}
+                >
+                  上一页
+                </button>
+                <span style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '0 16px',
+                  fontSize: 14,
+                  color: '#666'
+                }}>
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    padding: '8px 16px',
+                    border: 'none',
+                    borderRadius: 8,
+                    background: currentPage === totalPages ? '#f5f5f5' : '#2196F3',
+                    color: currentPage === totalPages ? '#999' : 'white',
+                    cursor: currentPage === totalPages ? 'default' : 'pointer',
+                    fontSize: 14,
+                  }}
+                >
+                  下一页
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* 更多主题敬请期待 */}
+        {themes.some(t => t.id === 'coming_soon') && activeCategory === 'all' && (
+          <div style={{ marginTop: 24 }}>
             {themes.filter(t => t.id === 'coming_soon').map((theme) => (
               <div
                 key={theme.id}
@@ -231,10 +362,10 @@ export function Home() {
       <div className="themes-section" style={{ marginTop: 32 }}>
         <div className="card" style={{ textAlign: 'left', lineHeight: 1.8, padding: 24 }}>
           <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>About This App</div>
-          <p style={{ marginBottom: 12 }}>🎯 <strong>可理解输入</strong> - 在真实场景中学习，理解比记忆更重要 / Comprehensible input in real contexts</p>
-          <p style={{ marginBottom: 12 }}>🏠 <strong>场景化学习</strong> - 餐厅、酒店、开车...覆盖日常生活场景 / Scenario-based learning for daily life</p>
-          <p style={{ marginBottom: 12 }}>📚 <strong>高频词汇</strong> - 精选日常生活最高频词汇 / High-frequency words for everyday use</p>
-          <p style={{ marginBottom: 12 }}>👂 听发音 → 👄 跟读练习 → 📖 情景视频，三步掌握实用表达 / Listen → Practice → Watch in context</p>
+          <p style={{ marginBottom: 12 }}>🎯 <strong>可理解输入</strong> - 在真实场景中学习，理解比记忆更重要</p>
+          <p style={{ marginBottom: 12 }}>🏠 <strong>场景化学习</strong> - 餐厅、酒店、开车...覆盖日常生活场景</p>
+          <p style={{ marginBottom: 12 }}>📚 <strong>高频词汇</strong> - 精选日常生活最高频词汇</p>
+          <p style={{ marginBottom: 12 }}>👂 听发音 → 👄 跟读练习 → 📖 情景视频，三步掌握实用表达</p>
         </div>
       </div>
     </div>

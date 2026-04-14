@@ -5,6 +5,7 @@ export const actionsTheme: Theme = {
   name: '常见动作',
   nameEn: 'Common Actions',
   icon: '🏃',
+  category: 'sport',
   description: '学习常见动作相关的词汇和句子',
   words: [
     { id: 'act_1', char: '走', pinyin: ['zǒu'], english: 'walk' },

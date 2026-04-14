@@ -32,12 +32,16 @@ export interface Level {
   video?: VideoScene;    // 第3关视频 (新版)
 }
 
+// 主题分类
+export type ThemeCategory = 'daily' | 'transport' | 'food' | 'sport' | 'other';
+
 // 主题配置
 export interface Theme {
   id: string;
   name: string;
   nameEn: string;
   icon: string;
+  category?: ThemeCategory;  // 主题分类
   description?: string;  // 主题描述 (新版)
   words: Word[];        // 主题所有词汇 (旧版兼容)
   levels: Level[];      // 关卡配置
