@@ -15,8 +15,7 @@ declare global {
   }
 }
 
-// TODO: 替换为真实的 PayPal Client ID
-const PAYPAL_CLIENT_ID = "AXJ8U8OrK_NcNAswDnZVjd0uy81DFgmv-onEiN-qjJCQaNx7SzjkNJp6eISg4xXe9dcsXTTTMpiuERrL";
+const PAYPAL_CLIENT_ID = 'AXJ8U8OrK_NcNAswDnZVjd0uy81DFgmv-onEiN-qjJCQaNx7SzjkNJp6eISg4xXe9dcsXTTTMpiuERrL';
 
 export function Pricing() {
   const { setPhase } = useGameStore();
@@ -103,7 +102,7 @@ export function Pricing() {
           <div style={{ fontSize: 14, color: '#555' }}>✅ 解锁全部主题</div>
           <div style={{ fontSize: 14, color: '#555' }}>✅ 跟读评分功能</div>
           <div style={{ marginTop: 12, fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>推荐</div>
-          <div id="paypal-button-container" style={{ marginTop: 16, minHeight: 45 }}>
+          <div id='paypal-button-container' style={{ marginTop: 16, minHeight: 45 }}>
             {!paypalLoaded && <div style={{color: '#999', fontSize: 14}}>加载中...</div>}
           </div>
         </div>

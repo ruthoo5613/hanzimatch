@@ -4,3 +4,4 @@ export { taxiTheme } from './taxi';
 export { hotelTheme } from './hotel';
 export { restaurantThemeV2 } from './restaurantV2';
 export { comingSoonTheme } from './coming';
+export { supermarketTheme } from './supermarket';

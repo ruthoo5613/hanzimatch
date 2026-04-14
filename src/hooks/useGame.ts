@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
-import { restaurantThemeV2, hotelTheme, comingSoonTheme } from '../data';
+import { restaurantThemeV2, hotelTheme, comingSoonTheme, supermarketTheme } from '../data';
 
 interface GameStore extends GameState {
   themes: Theme[];
@@ -35,8 +35,8 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-      // 旧版主题 + 新版v2主题
-      themes: [restaurantThemeV2, hotelTheme, comingSoonTheme],
+      // 旧版主题 + 新版v2主题 + 超市购物主题
+      themes: [restaurantThemeV2, hotelTheme, supermarketTheme, comingSoonTheme],
 
       setTheme: (theme: Theme) => {
         // 获取第1关的词汇（兼容新旧两种数据结构）
@@ -61,8 +61,9 @@ export const useGameStore = create<GameStore>()(
           currentSentences: sentences,
         });
         
-        // 只有 restaurant_v2, hotel, driving 使用新版 level1 界面（左侧词汇列表）
-        if ((theme.id === 'restaurant_v2' || theme.id === 'hotel' || theme.id === 'driving') && level1?.type === 'words') {
+        // 使用新版 level1 界面的主题
+        const newThemeIds = ['restaurant_v2', 'hotel', 'driving', 'supermarket'];
+        if (newThemeIds.includes(theme.id) && level1?.type === 'words') {
           set({ phase: 'level1' });
         } else {
           // 旧主题默认进入 phase1
@@ -101,8 +102,9 @@ export const useGameStore = create<GameStore>()(
       
       isThemeUnlocked: (themeId: string) => {
         const state = get();
-        // v2主题默认解锁测试 - restaurant_v2, hotel, driving 都默认解锁
-        if (themeId === 'restaurant_v2' || themeId === 'hotel' || themeId === 'driving') return true;
+        // v2主题默认解锁测试 - restaurant_v2, hotel, driving, supermarket 都默认解锁
+        const newThemes = ['restaurant_v2', 'hotel', 'driving', 'supermarket'];
+        if (newThemes.includes(themeId)) return true;
         // 旧版主题逻辑
         if (themeId === 'scenic') return true;
         if (state.unlockedThemes.includes(themeId)) return true;

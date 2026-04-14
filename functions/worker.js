@@ -4,7 +4,13 @@
  * 环境变量（通过 wrangler secret 设置）：
  * - TENCENTCLOUD_SECRET_ID
  * - TENCENTCLOUD_SECRET_KEY
+ * - PAYPAL_SECRET (可选，用于生产环境验证)
  */
+
+// PayPal 配置
+const PAYPAL_CLIENT_ID = 'AXJ8U8OrK_NcNAswDnZVjd0uy81DFgmv-onEiN-qjJCQaNx7SzjkNJp6eISg4xXe9dcsXTTTMpiuERrL';
+const PAYPAL_SECRET = ''; // 生产环境需要设置
+const PAYPAL_BASE_URL = 'https://api-m.paypal.com'; // 生产环境
 
 // SHA256 哈希
 async function sha256Hex(str) {
@@ -58,6 +64,22 @@ async function generateSignature(secretId, secretKey, payload, timestamp) {
   const signature = await hmacSha256Hex(secretSigning, stringToSign);
   
   return `${algorithm} Credential=${secretId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+}
+
+// 获取 PayPal Access Token
+async function getPayPalAccessToken() {
+  const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`);
+  const response = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+  
+  const data = await response.json();
+  return data.access_token;
 }
 
 // 调用腾讯云 ASR API
@@ -141,6 +163,49 @@ export default {
         });
       } catch (error) {
         console.error('ASR Error:', error.message);
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
+      }
+    }
+
+    // PayPal 订单验证端点
+    if (request.method === 'POST' && request.url.includes('/verify-order')) {
+      try {
+        const body = await request.json();
+        const { orderID } = body;
+        
+        if (!orderID) {
+          return new Response(JSON.stringify({ error: 'No orderID' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+          });
+        }
+
+        // 从 PayPal 获取订单详情验证支付
+        const accessToken = await getPayPalAccessToken();
+        const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const order = await response.json();
+        
+        // 验证订单状态
+        if (order.status === 'COMPLETED' && order.purchase_units?.[0]?.payments?.captures?.[0]?.status === 'COMPLETED') {
+          return new Response(JSON.stringify({ verified: true }), {
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+          });
+        } else {
+          return new Response(JSON.stringify({ verified: false, status: order.status }), {
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+          });
+        }
+      } catch (error) {
+        console.error('Verify Order Error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
           status: 500,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
