@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, GamePhase, Theme, Word, Sentence } from '../types';
-import { restaurantThemeV2, hotelTheme, comingSoonTheme, supermarketTheme } from '../data';
+import { restaurantThemeV2, hotelTheme, comingSoonTheme, supermarketTheme, parkTheme } from '../data';
 
 interface GameStore extends GameState {
   themes: Theme[];
@@ -35,8 +35,8 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-      // 旧版主题 + 新版v2主题 + 超市购物主题
-      themes: [restaurantThemeV2, hotelTheme, supermarketTheme, comingSoonTheme],
+      // 旧版主题 + 新版v2主题 + 超市购物 + 公园散步主题
+      themes: [restaurantThemeV2, hotelTheme, supermarketTheme, parkTheme, comingSoonTheme],
 
       setTheme: (theme: Theme) => {
         // 获取第1关的词汇（兼容新旧两种数据结构）
@@ -62,7 +62,7 @@ export const useGameStore = create<GameStore>()(
         });
         
         // 使用新版 level1 界面的主题
-        const newThemeIds = ['restaurant_v2', 'hotel', 'driving', 'supermarket'];
+        const newThemeIds = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park'];
         if (newThemeIds.includes(theme.id) && level1?.type === 'words') {
           set({ phase: 'level1' });
         } else {
@@ -102,8 +102,8 @@ export const useGameStore = create<GameStore>()(
       
       isThemeUnlocked: (themeId: string) => {
         const state = get();
-        // v2主题默认解锁测试 - restaurant_v2, hotel, driving, supermarket 都默认解锁
-        const newThemes = ['restaurant_v2', 'hotel', 'driving', 'supermarket'];
+        // v2主题默认解锁测试 - restaurant_v2, hotel, driving, supermarket, park 都默认解锁
+        const newThemes = ['restaurant_v2', 'hotel', 'driving', 'supermarket', 'park'];
         if (newThemes.includes(themeId)) return true;
         // 旧版主题逻辑
         if (themeId === 'scenic') return true;
