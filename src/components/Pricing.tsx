@@ -91,17 +91,22 @@ export function Pricing() {
             <div style={{ fontSize: 20, fontWeight: 600 }}>免费版</div>
             <div style={{ fontSize: 24, fontWeight: 700 }}>免费</div>
           </div>
-          <div style={{ fontSize: 14, color: '#555' }}>✅ 解锁全部主题</div>
+          <div style={{ fontSize: 14, color: '#555' }}>✅ 全部主题</div>
+          <div style={{ fontSize: 14, color: '#555' }}>✅ 基础发音</div>
+          <div style={{ fontSize: 14, color: '#999' }}>❌ 跟读AI评分</div>
+          <div style={{ fontSize: 14, color: '#999' }}>❌ 学习报告</div>
         </div>
 
         <div style={{ padding: '24px 20px', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderRadius: 16, border: '2px solid #4CAF50', boxShadow: '0 4px 16px rgba(76, 175, 80, 0.2)', cursor: 'pointer' }} onClick={() => document.getElementById('paypal-button-container')?.querySelector('button')?.click()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <div style={{ fontSize: 20, fontWeight: 600 }}>付费版</div>
+            <div style={{ fontSize: 20, fontWeight: 600 }}>Pro版</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: '#4CAF50' }}>$9.99/年</div>
           </div>
-          <div style={{ fontSize: 14, color: '#555' }}>✅ 解锁全部主题</div>
-          <div style={{ fontSize: 14, color: '#555' }}>✅ 跟读评分功能</div>
-          <div style={{ marginTop: 12, fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>推荐</div>
+          <div style={{ fontSize: 14, color: '#555' }}>✅ 全部主题</div>
+          <div style={{ fontSize: 14, color: '#555' }}>✅ AI跟读评分</div>
+          <div style={{ fontSize: 14, color: '#555' }}>✅ 学习进度报告</div>
+          <div style={{ fontSize: 14, color: '#555' }}>✅ 专属徽章</div>
+          <div style={{ marginTop: 12, fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>🔥 仅剩最后12个名额</div>
           <div id='paypal-button-container' style={{ marginTop: 16, minHeight: 45 }}>
             {!paypalLoaded && <div style={{color: '#999', fontSize: 14}}>加载中...</div>}
           </div>
