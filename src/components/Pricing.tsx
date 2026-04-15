@@ -48,7 +48,7 @@ export function Pricing() {
       window.paypal.Buttons({
         style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' },
         createOrder: (_data, actions) => actions.order.create({
-          purchase_units: [{ amount: { value: '9.99' } }]
+          purchase_units: [{ amount: { value: '4.99' } }]
         }),
         onApprove: async () => {
           const expiresAt = new Date();
@@ -100,13 +100,13 @@ export function Pricing() {
         <div style={{ padding: '24px 20px', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderRadius: 16, border: '2px solid #4CAF50', boxShadow: '0 4px 16px rgba(76, 175, 80, 0.2)', cursor: 'pointer' }} onClick={() => document.getElementById('paypal-button-container')?.querySelector('button')?.click()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ fontSize: 20, fontWeight: 600 }}>Pro版</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#4CAF50' }}>$9.99/年</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#4CAF50' }}>$4.99/年</div>
           </div>
           <div style={{ fontSize: 14, color: '#555' }}>✅ 全部主题</div>
           <div style={{ fontSize: 14, color: '#555' }}>✅ AI跟读评分</div>
           <div style={{ fontSize: 14, color: '#555' }}>✅ 学习进度报告</div>
           <div style={{ fontSize: 14, color: '#555' }}>✅ 专属徽章</div>
-          <div style={{ marginTop: 12, fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>🔥 仅剩最后12个名额</div>
+          <div style={{ fontSize: 12, color: '#4CAF50', fontWeight: 600 }}>🔥 限时优惠 - 50% OFF</div>
           <div id='paypal-button-container' style={{ marginTop: 16, minHeight: 45 }}>
             {!paypalLoaded && <div style={{color: '#999', fontSize: 14}}>加载中...</div>}
           </div>
