@@ -33,7 +33,7 @@ export interface Level {
 }
 
 // 主题分类
-export type ThemeCategory = 'daily' | 'transport' | 'food' | 'sport' | 'other' | 'my';
+export type ThemeCategory = 'daily' | 'transport' | 'food' | 'sport' | 'other';
 
 // 主题配置
 export interface Theme {

@@ -4,131 +4,29 @@ import { useAuthStore } from '../hooks/useAuth';
 import { useSubscriptionStore } from '../hooks/useSubscription';
 import type { Theme, ThemeCategory, Word, Sentence } from '../types';
 
-const CATEGORIES: { id: ThemeCategory | 'my'; name: string; icon: string }[] = [
+const CATEGORIES: { id: ThemeCategory; name: string; icon: string }[] = [
   { id: 'daily', name: 'Daily Life', icon: '🏠' },
   { id: 'transport', name: 'Transport', icon: '🚗' },
   { id: 'food', name: 'Food & Dining', icon: '🍜' },
   { id: 'sport', name: 'Sports', icon: '💪' },
-  { id: 'my', name: 'My Themes', icon: '⭐' },
 ];
 
 const THEMES_PER_PAGE = 6;
 
-// 根据主题名称获取预设词汇和句子
-const getThemeVocabulary = (themeName: string, themeId: string): { words: Word[]; sentences: Sentence[] } => {
-  const name = themeName.toLowerCase();
-  
-  // 爬山主题
-  if (name.includes('爬') || name.includes('山') || name.includes('mountain') || name.includes('hike')) {
-    return {
-      words: [
-        { id: `${themeId}_w1`, char: '爬山', pinyin: ['pá', 'shān'], english: 'mountain climbing' },
-        { id: `${themeId}_w2`, char: '山', pinyin: ['shān'], english: 'mountain' },
-        { id: `${themeId}_w3`, char: '登山', pinyin: ['dēng', 'shān'], english: 'hiking' },
-        { id: `${themeId}_w4`, char: '山顶', pinyin: ['shān', 'dǐng'], english: 'summit' },
-        { id: `${themeId}_w5`, char: '山脚', pinyin: ['shān', 'jiǎo'], english: 'mountain foot' },
-        { id: `${themeId}_w6`, char: '台阶', pinyin: ['tái', 'jiē'], english: 'steps' },
-        { id: `${themeId}_w7`, char: '路', pinyin: ['lù'], english: 'path' },
-        { id: `${themeId}_w8`, char: '背包', pinyin: ['bèi', 'bāo'], english: 'backpack' },
-        { id: `${themeId}_w9`, char: '登山鞋', pinyin: ['dēng', 'shān', 'xié'], english: 'hiking shoes' },
-        { id: `${themeId}_w10`, char: '水', pinyin: ['shuǐ'], english: 'water' },
-        { id: `${themeId}_w11`, char: '食物', pinyin: ['shí', 'wù'], english: 'food' },
-        { id: `${themeId}_w12`, char: '体力', pinyin: ['tǐ', 'lì'], english: 'physical strength' },
-        { id: `${themeId}_w13`, char: '累', pinyin: ['lèi'], english: 'tired' },
-        { id: `${themeId}_w14`, char: '休息', pinyin: ['xiū', 'xi'], english: 'rest' },
-        { id: `${themeId}_w15`, char: '风景', pinyin: ['fēng', 'jǐng'], english: 'scenery' },
-        { id: `${themeId}_w16`, char: '自然', pinyin: ['zì', 'rán'], english: 'nature' },
-        { id: `${themeId}_w17`, char: '森林', pinyin: ['sēn', 'lín'], english: 'forest' },
-        { id: `${themeId}_w18`, char: '树木', pinyin: ['shù', 'mù'], english: 'trees' },
-        { id: `${themeId}_w19`, char: '花朵', pinyin: ['huā', 'duǒ'], english: 'flowers' },
-        { id: `${themeId}_w20`, char: '小鸟', pinyin: ['xiǎo', 'niǎo'], english: 'small bird' },
-        { id: `${themeId}_w21`, char: '呼吸', pinyin: ['hū', 'xī'], english: 'breathe' },
-        { id: `${themeId}_w22`, char: '新鲜', pinyin: ['xīn', 'xiān'], english: 'fresh' },
-        { id: `${themeId}_w23`, char: '空气', pinyin: ['kōng', 'qì'], english: 'air' },
-        { id: `${themeId}_w24`, char: '阳光', pinyin: ['yáng', 'guāng'], english: 'sunshine' },
-        { id: `${themeId}_w25`, char: '出汗', pinyin: ['chū', 'hàn'], english: 'sweat' },
-        { id: `${themeId}_w26`, char: '危险', pinyin: ['wēi', 'xiǎn'], english: 'dangerous' },
-        { id: `${themeId}_w27`, char: '安全', pinyin: ['ān', 'quán'], english: 'safe' },
-        { id: `${themeId}_w28`, char: '小心', pinyin: ['xiǎo', 'xīn'], english: 'be careful' },
-        { id: `${themeId}_w29`, char: '坚持', pinyin: ['jiān', 'chí'], english: 'persevere' },
-        { id: `${themeId}_w30`, char: '到达', pinyin: ['dào', 'dá'], english: 'arrive' },
-      ],
-      sentences: [
-        { id: `${themeId}_s1`, text: '我们去爬山吧', pinyin: 'wǒ men qù pá shān ba', english: 'Let us go mountain climbing' },
-        { id: `${themeId}_s2`, text: '这座山有多高？', pinyin: 'zhè zuò shān yǒu duō gāo?', english: 'How high is this mountain?' },
-        { id: `${themeId}_s3`, text: '山顶的风景真美', pinyin: 'shān dǐng de fēng jǐng zhēn měi', english: 'The scenery at the summit is beautiful' },
-        { id: `${themeId}_s4`, text: '我累了，想休息一下', pinyin: 'wǒ lèi le, xiǎng xiū xi yí xià', english: 'I am tired, want to rest' },
-        { id: `${themeId}_s5`, text: '我们带点水和食物吧', pinyin: 'wǒ men dài diǎn shuǐ hé shí wù ba', english: 'Let us bring some water and food' },
-        { id: `${themeId}_s6`, text: '爬山对身体好', pinyin: 'pá shān duì shēn tǐ hǎo', english: 'Mountain climbing is good for health' },
-        { id: `${themeId}_s7`, text: '这里的空气真新鲜', pinyin: 'zhè lǐ de kōng qì zhēn xīn xiān', english: 'The air here is so fresh' },
-        { id: `${themeId}_s8`, text: '小心，这里很危险', pinyin: 'xiǎo xīn, zhè lǐ hěn wēi xiǎn', english: 'Be careful, it is dangerous here' },
-        { id: `${themeId}_s9`, text: '坚持就是胜利', pinyin: 'jiān chí jiù shì shèng lì', english: 'Perseverance is victory' },
-        { id: `${themeId}_s10`, text: '我们终于到达山顶了', pinyin: 'wǒ men zhōng yú dào dá shān dǐng le', english: 'We finally reached the summit' },
-      ],
-    };
-  }
-  
-  // 默认通用词汇
-  return {
-    words: [
-      { id: `${themeId}_w1`, char: '学习', pinyin: ['xué', 'xí'], english: 'study/learn' },
-      { id: `${themeId}_w2`, char: '练习', pinyin: ['liàn', 'xí'], english: 'practice' },
-      { id: `${themeId}_w3`, char: '听', pinyin: ['tīng'], english: 'listen' },
-      { id: `${themeId}_w4`, char: '说', pinyin: ['shuō'], english: 'speak' },
-      { id: `${themeId}_w5`, char: '读', pinyin: ['dú'], english: 'read' },
-      { id: `${themeId}_w6`, char: '写', pinyin: ['xiě'], english: 'write' },
-      { id: `${themeId}_w7`, char: '看', pinyin: ['kàn'], english: 'look/watch' },
-      { id: `${themeId}_w8`, char: '理解', pinyin: ['lǐ', 'jiě'], english: 'understand' },
-      { id: `${themeId}_w9`, char: '记住', pinyin: ['jì', 'zhù'], english: 'remember' },
-      { id: `${themeId}_w10`, char: '说话', pinyin: ['shuō', 'huà'], english: 'talk/speak' },
-      { id: `${themeId}_w11`, char: '中文', pinyin: ['zhōng', 'wén'], english: 'Chinese' },
-      { id: `${themeId}_w12`, char: '汉字', pinyin: ['hàn', 'zì'], english: 'Chinese character' },
-      { id: `${themeId}_w13`, char: '拼音', pinyin: ['pīn', 'yīn'], english: 'pinyin' },
-      { id: `${themeId}_w14`, char: '意思', pinyin: ['yì', 'si'], english: 'meaning' },
-      { id: `${themeId}_w15`, char: '发音', pinyin: ['fā', 'yīn'], english: 'pronunciation' },
-      { id: `${themeId}_w16`, char: '句子', pinyin: ['jù', 'zi'], english: 'sentence' },
-      { id: `${themeId}_w17`, char: '单词', pinyin: ['dān', 'cí'], english: 'word' },
-      { id: `${themeId}_w18`, char: '对话', pinyin: ['duì', 'huà'], english: 'dialogue' },
-      { id: `${themeId}_w19`, char: '问题', pinyin: ['wèn', 'tí'], english: 'question' },
-      { id: `${themeId}_w20`, char: '回答', pinyin: ['huí', 'dá'], english: 'answer' },
-      { id: `${themeId}_w21`, char: '朋友', pinyin: ['péng', 'you'], english: 'friend' },
-      { id: `${themeId}_w22`, char: '老师', pinyin: ['lǎo', 'shī'], english: 'teacher' },
-      { id: `${themeId}_w23`, char: '学生', pinyin: ['xué', 'sheng'], english: 'student' },
-      { id: `${themeId}_w24`, char: '时间', pinyin: ['shí', 'jiān'], english: 'time' },
-      { id: `${themeId}_w25`, char: '今天', pinyin: ['jīn', 'tiān'], english: 'today' },
-      { id: `${themeId}_w26`, char: '明天', pinyin: ['míng', 'tiān'], english: 'tomorrow' },
-      { id: `${themeId}_w27`, char: '现在', pinyin: ['xiàn', 'zài'], english: 'now' },
-      { id: `${themeId}_w28`, char: '开始', pinyin: ['kāi', 'shǐ'], english: 'start' },
-      { id: `${themeId}_w29`, char: '结束', pinyin: ['jié', 'shù'], english: 'end' },
-      { id: `${themeId}_w30`, char: '重要', pinyin: ['zhòng', 'yào'], english: 'important' },
-    ],
-    sentences: [
-      { id: `${themeId}_s1`, text: '我在学习中文', pinyin: 'wǒ zài xué xí zhōng wén', english: 'I am learning Chinese' },
-      { id: `${themeId}_s2`, text: '请跟我读', pinyin: 'qǐng gēn wǒ dú', english: 'Please read after me' },
-      { id: `${themeId}_s3`, text: '这个怎么说？', pinyin: 'zhè ge zěn me shuō?', english: 'How do you say this?' },
-      { id: `${themeId}_s4`, text: '我不太懂', pinyin: 'wǒ bù tài dǒng', english: 'I do not quite understand' },
-      { id: `${themeId}_s5`, text: '请再说一遍', pinyin: 'qǐng zài shuō yí biàn', english: 'Please say it again' },
-      { id: `${themeId}_s6`, text: '我记住了', pinyin: 'wǒ jì zhù le', english: 'I remember it' },
-      { id: `${themeId}_s7`, text: '我们要多练习', pinyin: 'wǒ men yào duō liàn xí', english: 'We need to practice more' },
-      { id: `${themeId}_s8`, text: '看视频学习', pinyin: 'kàn shì pín xué xí', english: 'Learn by watching videos' },
-      { id: `${themeId}_s9`, text: '你明白了吗？', pinyin: 'nǐ míng bai le ma?', english: 'Do you understand?' },
-      { id: `${themeId}_s10`, text: '一起加油吧', pinyin: 'yì qǐ jiā yóu ba', english: 'Let us work hard together' },
-    ],
-  };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// 主题名称获取预设词汇和句子（已禁用自定义主题）
+const getThemeVocabulary = (_themeName: string, _themeId: string): { words: Word[]; sentences: Sentence[] } => {
+  // 自定义主题功能已禁用，返回空数据
+  return { words: [], sentences: [] };
 };
 
 export function Home() {
-  const { themes, customThemes, addCustomTheme, deleteCustomTheme, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
+  const { themes, setTheme, setPhase, isThemeUnlocked, isThemeCompleted } = useGameStore();
   const { isAuthenticated, user, login, logout, isLoading } = useAuthStore();
   const { tier } = useSubscriptionStore();
   
-  const [activeCategory, setActiveCategory] = useState<ThemeCategory | 'my'>('daily');
+  const [activeCategory, setActiveCategory] = useState<ThemeCategory>('daily');
   const [currentPage, setCurrentPage] = useState(1);
-  
-  // 自定义主题表单状态
-  const [newThemeName, setNewThemeName] = useState('');
-  const [newThemeVideo, setNewThemeVideo] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
 
   const handleSelectTheme = (theme: Theme) => {
     if (!isThemeUnlocked(theme.id)) {
@@ -164,88 +62,8 @@ export function Home() {
     return true;
   };
 
-  // 从YouTube URL提取视频ID
-  const extractYouTubeId = (url: string): string | null => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-      /youtube\.com\/shorts\/([^&\n?#]+)/,
-    ];
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) return match[1];
-    }
-    return null;
-  };
-
-  // 创建自定义主题
-  const handleCreateTheme = () => {
-    if (!newThemeName.trim() || !newThemeVideo.trim()) {
-      alert('Please enter theme name and video link');
-      return;
-    }
-
-    const videoId = extractYouTubeId(newThemeVideo.trim());
-    if (!videoId) {
-      alert('Please enter a valid YouTube video link');
-      return;
-    }
-
-    // 生成唯一ID
-    const themeId = `custom_${Date.now()}`;
-    
-    // 根据主题名称生成内容
-    const { words, sentences } = getThemeVocabulary(newThemeName.trim(), themeId);
-    
-    // 创建自定义主题
-    const customTheme: Theme = {
-      id: themeId,
-      name: newThemeName.trim(),
-      nameEn: newThemeName.trim(),
-      icon: '📖',
-      category: 'my',
-      description: 'Custom theme',
-      words: words,
-      levels: [
-        {
-          id: 1,
-          type: 'words',
-          words: words,
-        },
-        {
-          id: 2,
-          type: 'sentences',
-          sentences: sentences,
-        },
-        {
-          id: 3,
-          type: 'video',
-          video: {
-            id: `v_${themeId}`,
-            videoUrl: `https://www.youtube.com/embed/${videoId}`,
-            transcript: '',
-            prompts: [],
-          },
-        },
-      ],
-    };
-
-    addCustomTheme(customTheme);
-    setNewThemeName('');
-    setNewThemeVideo('');
-    setIsCreating(false);
-    alert('Theme created with vocabulary and sentences!');
-  };
-
-  // 合并所有主题（预设 + 自定义）
-  const allThemes = [...themes.filter(t => t.id !== 'coming_soon'), ...customThemes];
-
   // 过滤主题
-  const filteredThemes = allThemes.filter(t => {
-    if (activeCategory === 'my') {
-      return customThemes.some(ct => ct.id === t.id);
-    }
-    return t.category === activeCategory;
-  });
+  const filteredThemes = themes.filter(t => t.id !== 'coming_soon' && t.category === activeCategory);
 
   // 分页
   const totalPages = Math.ceil(filteredThemes.length / THEMES_PER_PAGE);
@@ -255,7 +73,7 @@ export function Home() {
   );
 
   // 切换分类时重置页码
-  const handleCategoryChange = (category: ThemeCategory | 'my') => {
+  const handleCategoryChange = (category: ThemeCategory) => {
     setActiveCategory(category);
     setCurrentPage(1);
   };
@@ -414,95 +232,6 @@ export function Home() {
           </button>
         </div>
 
-        {/* 我的主题 - 创建表单 */}
-        {activeCategory === 'my' && (
-          <div style={{ marginBottom: 24, padding: 16, background: '#f8f9fa', borderRadius: 12 }}>
-            {!isCreating ? (
-              <button
-                onClick={() => setIsCreating(true)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: 16,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                }}
-              >
-                ➕ Create New Theme
-              </button>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <input
-                  type="text"
-                  placeholder="Theme name (e.g., 爬山)"
-                  value={newThemeName}
-                  onChange={(e) => setNewThemeName(e.target.value)}
-                  style={{
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: 8,
-                    fontSize: 14,
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Paste YouTube video link"
-                  value={newThemeVideo}
-                  onChange={(e) => setNewThemeVideo(e.target.value)}
-                  style={{
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: 8,
-                    fontSize: 14,
-                  }}
-                />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={handleCreateTheme}
-                    style={{
-                      flex: 1,
-                      padding: '12px',
-                      background: '#2196F3',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Submit
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsCreating(false);
-                      setNewThemeName('');
-                      setNewThemeVideo('');
-                    }}
-                    style={{
-                      padding: '12px 20px',
-                      background: '#f5f5f5',
-                      color: '#666',
-                      border: 'none',
-                      borderRadius: 8,
-                      fontSize: 14,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {paginatedThemes.length === 0 ? (
           <div style={{ 
             textAlign: 'center', 
@@ -510,7 +239,7 @@ export function Home() {
             color: '#999',
             fontSize: 16 
           }}>
-            {activeCategory === 'my' ? 'Click above to create your first theme' : 'No themes in this category'}
+            {'No themes in this category'}
           </div>
         ) : (
           <>
@@ -518,7 +247,6 @@ export function Home() {
               {paginatedThemes.map((theme) => {
                 const completed = isThemeCompleted(theme.id);
                 const isLocked = checkThemeLocked(theme.id);
-                const isCustom = customThemes.some(ct => ct.id === theme.id);
 
                 return (
                   <div
@@ -537,31 +265,6 @@ export function Home() {
                       position: 'relative',
                     }}
                   >
-                    {/* 删除按钮（仅自定义主题显示） */}
-                    {isCustom && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm('Delete this theme?')) {
-                            deleteCustomTheme(theme.id);
-                          }
-                        }}
-                        style={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 8,
-                          background: 'transparent',
-                          border: 'none',
-                          fontSize: 16,
-                          cursor: 'pointer',
-                          opacity: 0.5,
-                        }}
-                        title="Delete theme"
-                      >
-                        🗑️
-                      </button>
-                    )}
-                    
                     <div 
                       onClick={() => !isLocked && handleSelectTheme(theme)}
                       style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}
