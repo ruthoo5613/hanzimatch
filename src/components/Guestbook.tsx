@@ -33,11 +33,13 @@ export function Guestbook() {
     if (saved) {
       setMessages(JSON.parse(saved));
     } else {
-      // 默认留言
+      // 默认留言 - 社交证明
       const defaultMessages: Message[] = [
-        { id: 1, name: 'Alice', content: 'Great app for learning Chinese!', date: '2024-01-15' },
-        { id: 2, name: 'Bob', content: '很好用的学习工具', date: '2024-01-10' },
-        { id: 3, name: 'Carol', content: '场景化学习真的很有效', date: '2024-01-05' },
+        { id: 1, name: 'Sarah M.', content: 'AI pronunciation feedback is amazing! Finally found a fun way to learn Chinese 🎯', date: '2026-04-10' },
+        { id: 2, name: 'David L.', content: 'Learning for 2 weeks, already know 50+ words. Highly recommend!', date: '2026-04-08' },
+        { id: 3, name: 'Maria K.', content: '场景化学习真的很有帮助，中文进步了很多', date: '2026-04-05' },
+        { id: 4, name: 'James T.', content: 'Great app! The gamification keeps me motivated every day', date: '2026-04-01' },
+        { id: 5, name: 'Anonymous', content: 'Best Chinese learning app I have tried', date: '2026-03-28' },
       ];
       setMessages(defaultMessages);
       localStorage.setItem('hanzimatch_messages', JSON.stringify(defaultMessages));
