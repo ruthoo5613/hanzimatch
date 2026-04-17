@@ -12,3 +12,7 @@ export { citywalkTheme } from './citywalk';
 export { cookingTheme } from './cooking';
 export { actionsTheme } from './actions';
 export { gymTheme } from './gym';
+export { airportTheme } from './airport';
+export { shoppingTheme } from './shopping';
+export { bankTheme } from './bank';
+export { hospitalTheme } from './hospital';

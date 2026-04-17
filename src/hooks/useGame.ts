@@ -12,7 +12,11 @@ import {
   citywalkTheme, 
   cookingTheme, 
   actionsTheme, 
-  gymTheme 
+  gymTheme,
+  airportTheme,
+  shoppingTheme,
+  bankTheme,
+  hospitalTheme
 } from '../data';
 
 const DEFAULT_THEMES = [
@@ -26,6 +30,10 @@ const DEFAULT_THEMES = [
   cookingTheme, 
   actionsTheme, 
   gymTheme, 
+  airportTheme,
+  shoppingTheme,
+  bankTheme,
+  hospitalTheme,
   comingSoonTheme
 ];
 
